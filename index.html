@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Portfolio de x37a — curieux du web, accompagné de Powell, husky blanc." />
+    <title>x37a — Portfolio</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+    <!-- Intro fermeture éclair -->
+    <div class="zipper-intro" id="zipperIntro" role="button" tabindex="0" aria-label="Cliquer pour ouvrir le site">
+        <div class="zipper-grain" aria-hidden="true"></div>
+        <div class="zipper-logo" aria-hidden="true">X37A</div>
+        <div class="zipper-halo" aria-hidden="true"></div>
+
+        <div class="panel panel-left"></div>
+        <div class="panel panel-right"></div>
+
+        <div class="zipper-teeth" aria-hidden="true"></div>
+
+        <div class="zipper-pull" id="zipperPull">
+            <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="silver" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#fafafa" />
+                        <stop offset="20%" stop-color="#d4d4d6" />
+                        <stop offset="45%" stop-color="#9a9a9c" />
+                        <stop offset="55%" stop-color="#6c6c6e" />
+                        <stop offset="80%" stop-color="#aeaeb0" />
+                        <stop offset="100%" stop-color="#e4e4e6" />
+                    </linearGradient>
+                    <linearGradient id="silverDark" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#404044" />
+                        <stop offset="50%" stop-color="#2a2a2e" />
+                        <stop offset="100%" stop-color="#1a1a1d" />
+                    </linearGradient>
+                    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+                        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.85" />
+                        <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                    </linearGradient>
+                </defs>
+                <!-- Corps principal (carré arrondi) -->
+                <rect x="8" y="4" width="44" height="34" rx="7" fill="url(#silver)" stroke="#1a1a1d" stroke-width="1.4" />
+                <!-- Reflet animé qui balaie le corps -->
+                <rect class="pull-shine" x="8" y="4" width="44" height="34" rx="7" fill="url(#shine)" opacity="0.6" />
+                <!-- Trou central (pour le clip de fixation) -->
+                <ellipse cx="30" cy="22" rx="6" ry="4" fill="url(#silverDark)" />
+                <!-- Lien entre corps et tirette -->
+                <rect x="25" y="38" width="10" height="6" fill="url(#silver)" stroke="#1a1a1d" stroke-width="0.8" />
+                <!-- Tirette en goutte -->
+                <path d="M14 46 Q30 105 46 46 Q30 60 14 46 Z" fill="url(#silver)" stroke="#1a1a1d" stroke-width="1.4" />
+                <!-- Petit reflet sur la tirette -->
+                <path d="M20 50 Q30 85 40 50" stroke="#fafafa" stroke-width="1.2" fill="none" opacity="0.55" />
+                <!-- Trou de la tirette -->
+                <circle cx="30" cy="78" r="4" fill="#0a0a0b" />
+            </svg>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <main id="content">
+
+        <header class="nav">
+            <a href="#accueil" class="brand">x37a</a>
+            <nav>
+                <a href="#apropos">À propos</a>
+                <a href="#powell">Powell</a>
+                <a href="#competences">Compétences</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </header>
+
+        <section id="accueil" class="hero">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+
+            <div class="hero-inner">
+                <p class="eyebrow">Pas tout à fait par hasard.</p>
+                <h1><span class="highlight">Powell &amp; X37A</span></h1>
+                <p class="lede">
+                    Un husky curieux. Un humain curieux. Tout reste à écrire.
+                </p>
+                <div class="cta-row">
+                    <a class="btn btn-primary" href="#apropos">Découvrir</a>
+                    <a class="btn btn-ghost" href="#contact">Écrire</a>
+                </div>
+            </div>
+
+            <div class="scroll-indicator" aria-hidden="true">
+                <span></span>
+            </div>
+        </section>
+
+        <section id="apropos" class="section reveal">
+            <div class="section-head">
+                <span class="chip chip-pink">01</span>
+                <h2>À propos</h2>
+            </div>
+            <div class="about-grid">
+                <p class="about-text">
+                    Mon objectif est de développer des projets qui relient technologie, créativité et conscience humaine pour aider les gens à apprendre, s’organiser et évoluer.
+                </p>
+                <p class="about-text">
+                    Ce site est le premier de ces projets — un point de départ, pas une vitrine.
+                </p>
+            </div>
+        </section>
+
+        <section id="powell" class="section section-dark reveal">
+            <div class="section-head">
+                <span class="chip chip-cyan">02</span>
+                <h2>Mon camarade</h2>
+            </div>
+            <div class="powell-grid">
+                <div class="powell-card">
+                    <div class="powell-photo">
+                        <img src="assets/powell.jpg" alt="Powell, mon husky blanc" />
+                    </div>
+                    <div class="powell-info">
+                        <h3>Powell</h3>
+                        <p>
+                            À mes côtés au quotidien — témoin discret, complice attentif.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="competences" class="section reveal">
+            <div class="section-head">
+                <span class="chip chip-yellow">03</span>
+                <h2>Outils</h2>
+            </div>
+            <p class="section-lede">
+                Deux langues. Le reste viendra.
+            </p>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <span class="flag">🇫🇷</span>
+                    <h3>Français</h3>
+                    <p>Langue maternelle</p>
+                    <div class="bar"><span style="width: 100%"></span></div>
+                </div>
+                <div class="skill-card">
+                    <span class="flag">🇬🇧</span>
+                    <h3>Anglais</h3>
+                    <p>Courant</p>
+                    <div class="bar"><span style="width: 90%"></span></div>
+                </div>
+                <div class="skill-card skill-card-soon">
+                    <span class="flag">🧑‍💻</span>
+                    <h3>Le web</h3>
+                    <p>À venir.</p>
+                    <div class="bar"><span style="width: 0%"></span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section section-contact reveal">
+            <div class="section-head">
+                <span class="chip chip-purple">04</span>
+                <h2>Écrire</h2>
+            </div>
+            <p class="section-lede">
+                Une idée, un mot, un signe — je lis tout.
+            </p>
+
+            <form class="contact-form" id="contactForm" novalidate>
+                <label>
+                    <span>Prénom</span>
+                    <input type="text" name="name" required placeholder="Ton nom" />
+                </label>
+                <label>
+                    <span>Email</span>
+                    <input type="email" name="email" required placeholder="@" />
+                </label>
+                <label class="full">
+                    <span>Message</span>
+                    <textarea name="message" rows="5" required placeholder="…"></textarea>
+                </label>
+                <button type="submit" class="btn btn-primary">Envoyer</button>
+                <p class="form-note" id="formNote" aria-live="polite"></p>
+            </form>
+
+            <div class="socials">
+                <a class="social" href="https://github.com/ves-alex" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.53-1.34-1.3-1.7-1.3-1.7-1.06-.73.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.73 1.27 3.4.97.1-.76.41-1.28.75-1.57-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.41-5.27 5.69.42.36.79 1.07.79 2.16v3.2c0 .31.21.68.8.56C20.22 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
+                    <span>github.com/ves-alex</span>
+                </a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>© <span id="year"></span> X37A</p>
+        </footer>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
