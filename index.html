@@ -5,28 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Portfolio de x37a — curieux du web, accompagné de Powell, husky blanc." />
     <title>x37a — Portfolio</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=9" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-    <!-- Intro fermeture éclair -->
-    <div class="zipper-intro" id="zipperIntro" role="button" tabindex="0" aria-label="Cliquer pour ouvrir le site">
-        <div class="zipper-grain" aria-hidden="true"></div>
-        <div class="zipper-logo" aria-hidden="true">X37A</div>
-        <div class="zipper-halo" aria-hidden="true"></div>
+    <!-- Intro zipper circulaire -->
+    <div class="ring-intro" id="ringIntro" role="button" tabindex="0" aria-label="Cliquer pour ouvrir le site">
+        <svg class="ring-overlay" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <mask id="ring-hole">
+                    <rect x="0" y="0" width="100%" height="100%" fill="white" />
+                    <circle cx="50%" cy="50%" r="0" fill="black" class="ring-mask-circle" />
+                </mask>
+                <linearGradient id="ring-silver" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#f0f0f2" />
+                    <stop offset="45%" stop-color="#a0a0a4" />
+                    <stop offset="55%" stop-color="#6a6a6e" />
+                    <stop offset="100%" stop-color="#dcdce0" />
+                </linearGradient>
+            </defs>
+            <!-- Fond sombre avec trou circulaire -->
+            <rect x="0" y="0" width="100%" height="100%" fill="#060607" mask="url(#ring-hole)" />
+            <!-- Couronne de dents (cercle à traits) -->
+            <circle cx="50%" cy="50%" r="0" class="ring-teeth-outer"
+                    fill="none" stroke="url(#ring-silver)" stroke-width="6" stroke-dasharray="3 2"
+                    opacity="0.95" />
+            <circle cx="50%" cy="50%" r="0" class="ring-teeth-inner"
+                    fill="none" stroke="url(#ring-silver)" stroke-width="3" stroke-dasharray="2 3"
+                    opacity="0.7" />
+        </svg>
 
-        <div class="panel panel-left"></div>
-        <div class="panel panel-right"></div>
-
-        <div class="zipper-teeth" aria-hidden="true"></div>
-
-        <div class="zipper-pull" id="zipperPull">
+        <!-- Tirette argentée, se déplace vers le haut quand le cercle grandit -->
+        <div class="ring-pull" id="ringPull">
             <svg viewBox="0 0 60 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <defs>
-                    <linearGradient id="silver" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="pull-silver" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stop-color="#fafafa" />
                         <stop offset="20%" stop-color="#d4d4d6" />
                         <stop offset="45%" stop-color="#9a9a9c" />
@@ -34,31 +50,18 @@
                         <stop offset="80%" stop-color="#aeaeb0" />
                         <stop offset="100%" stop-color="#e4e4e6" />
                     </linearGradient>
-                    <linearGradient id="silverDark" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#404044" />
-                        <stop offset="50%" stop-color="#2a2a2e" />
-                        <stop offset="100%" stop-color="#1a1a1d" />
-                    </linearGradient>
-                    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id="pull-shine-grad" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
                         <stop offset="50%" stop-color="#ffffff" stop-opacity="0.85" />
                         <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
                     </linearGradient>
                 </defs>
-                <!-- Corps principal (carré arrondi) -->
-                <rect x="8" y="4" width="44" height="34" rx="7" fill="url(#silver)" stroke="#1a1a1d" stroke-width="1.4" />
-                <!-- Reflet animé qui balaie le corps -->
-                <rect class="pull-shine" x="8" y="4" width="44" height="34" rx="7" fill="url(#shine)" opacity="0.6" />
-                <!-- Trou central (pour le clip de fixation) -->
-                <ellipse cx="30" cy="22" rx="6" ry="4" fill="url(#silverDark)" />
-                <!-- Lien entre corps et tirette -->
-                <rect x="25" y="38" width="10" height="6" fill="url(#silver)" stroke="#1a1a1d" stroke-width="0.8" />
-                <!-- Tirette en goutte -->
-                <path d="M14 46 Q30 105 46 46 Q30 60 14 46 Z" fill="url(#silver)" stroke="#1a1a1d" stroke-width="1.4" />
-                <!-- Petit reflet sur la tirette -->
-                <path d="M20 50 Q30 85 40 50" stroke="#fafafa" stroke-width="1.2" fill="none" opacity="0.55" />
-                <!-- Trou de la tirette -->
-                <circle cx="30" cy="78" r="4" fill="#0a0a0b" />
+                <rect x="8" y="4" width="44" height="32" rx="7" fill="url(#pull-silver)" stroke="#1a1a1d" stroke-width="1.4" />
+                <rect class="ring-pull-shine" x="8" y="4" width="44" height="32" rx="7" fill="url(#pull-shine-grad)" opacity="0.6" />
+                <ellipse cx="30" cy="20" rx="6" ry="3.5" fill="#1a1a1d" />
+                <rect x="26" y="36" width="8" height="6" fill="url(#pull-silver)" stroke="#1a1a1d" stroke-width="0.8" />
+                <path d="M14 44 Q30 100 46 44 Q30 58 14 44 Z" fill="url(#pull-silver)" stroke="#1a1a1d" stroke-width="1.4" />
+                <circle cx="30" cy="76" r="4" fill="#0a0a0b" />
             </svg>
         </div>
     </div>
@@ -202,6 +205,6 @@
         </footer>
     </main>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=9"></script>
 </body>
 </html>

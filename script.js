@@ -1,29 +1,29 @@
-// ===== Intro fermeture éclair =====
-const intro = document.getElementById('zipperIntro');
-const pull = document.getElementById('zipperPull');
+// ===== Intro : zipper circulaire qui s'ouvre =====
+const intro = document.getElementById('ringIntro');
+const pull = document.getElementById('ringPull');
 
 let opening = false;
-let dragStartY = null;
-let dragStartX = null;
-let dragStartOffset = 0;
-let pullPosition = 0;
-let lastClickPos = 0;
-let lastVibratePos = 0;
 let autoOpenTimer = null;
-let autoOpenInterval = null;
 let audioCtx = null;
 
-const CLICK_INTERVAL_PX = 22;
-const VIBRATE_INTERVAL_PX = 30;
-const OPEN_DURATION = 1600;
-const SNAP_BACK_DURATION = 900;
-const AUTO_OPEN_DELAY = 2500;
-const FULL_OPEN_THRESHOLD = 0.96;
-const TILT_SENSITIVITY = 8;
+let dragStartY = null;
+let dragOffset = 0;
+let lastClickPos = 0;
+let lastVibratePos = 0;
 
-const maxPull = () => window.innerHeight - 110;
+const AUTO_OPEN_DELAY = 3000;
+const ANIM_DURATION = 2400;
+const BASE_R = 80;              // rayon initial du cercle (px)
+const BASE_PULL_OFFSET = 130;   // distance initiale de la tirette au centre (px)
+const DRAG_RATIO = 1.6;         // amplification : 1px de drag → 1.6px de rayon en plus
+const FULL_OPEN_THRESHOLD = 0.7;// drag minimum pour valider l'ouverture (en fraction de maxDrag)
+const CLICK_INTERVAL_PX = 28;
+const VIBRATE_INTERVAL_PX = 36;
+const SNAP_DURATION = 800;
 
-// ===== Web Audio : synthèse d'un clic métallique =====
+const maxDrag = () => window.innerHeight * 0.55;
+
+// ===== Web Audio : souffle d'ambiance pendant la dissipation =====
 function ensureAudioCtx() {
     if (audioCtx) return audioCtx;
     try {
@@ -34,124 +34,137 @@ function ensureAudioCtx() {
     return audioCtx;
 }
 
-function playZipperClick(intensity = 1) {
+// Souffle de zipper circulaire : montée de fréquence + clics rapides en parallèle
+function playRingZip() {
     const ctx = ensureAudioCtx();
     if (!ctx || ctx.state === 'closed') return;
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
 
-    const duration = 0.05;
+    const now = ctx.currentTime;
+    const duration = 2.4;
+
+    // Couche 1 : bruit blanc filtré (zip global)
     const bufferSize = Math.floor(ctx.sampleRate * duration);
     const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        const env = Math.exp(-i / (bufferSize * 0.18));
-        data[i] = (Math.random() * 2 - 1) * env;
-    }
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
     const source = ctx.createBufferSource();
     source.buffer = buffer;
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.value = 2200 + Math.random() * 1500;
-
-    const peak = ctx.createBiquadFilter();
-    peak.type = 'peaking';
-    peak.frequency.value = 4500;
-    peak.Q.value = 6;
-    peak.gain.value = 8;
+    const bandpass = ctx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.setValueAtTime(900, now);
+    bandpass.frequency.exponentialRampToValueAtTime(3500, now + duration * 0.7);
+    bandpass.frequency.linearRampToValueAtTime(1200, now + duration);
+    bandpass.Q.value = 1.4;
 
     const gain = ctx.createGain();
-    gain.gain.value = Math.min(0.18, 0.07 + intensity * 0.04);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.18, now + 0.25);
+    gain.gain.linearRampToValueAtTime(0.12, now + duration - 0.3);
+    gain.gain.linearRampToValueAtTime(0, now + duration);
 
-    source.connect(filter);
-    filter.connect(peak);
-    peak.connect(gain);
+    source.connect(bandpass);
+    bandpass.connect(gain);
+    gain.connect(ctx.destination);
+    source.start(now);
+    source.stop(now + duration + 0.1);
+
+    // Couche 2 : 16 micro-clics répartis sur la durée
+    for (let i = 0; i < 16; i++) {
+        const t = now + (i / 16) * duration * 0.92;
+        const clickBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.04), ctx.sampleRate);
+        const cd = clickBuf.getChannelData(0);
+        for (let j = 0; j < cd.length; j++) {
+            cd[j] = (Math.random() * 2 - 1) * Math.exp(-j / (cd.length * 0.18));
+        }
+        const clickSrc = ctx.createBufferSource();
+        clickSrc.buffer = clickBuf;
+        const hp = ctx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 2500 + Math.random() * 1500;
+        const cg = ctx.createGain();
+        cg.gain.value = 0.06;
+        clickSrc.connect(hp);
+        hp.connect(cg);
+        cg.connect(ctx.destination);
+        clickSrc.start(t);
+    }
+}
+
+function tryVibrate(pattern) {
+    if (navigator.vibrate) {
+        try { navigator.vibrate(pattern); } catch (e) {}
+    }
+}
+
+// Petit clic rapide pour le drag (un cran de zipper)
+function playRingClick(intensity = 1) {
+    const ctx = ensureAudioCtx();
+    if (!ctx || ctx.state === 'closed') return;
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+
+    const duration = 0.04;
+    const bufferSize = Math.floor(ctx.sampleRate * duration);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.18));
+    }
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 2400 + Math.random() * 1500;
+    const gain = ctx.createGain();
+    gain.gain.value = Math.min(0.16, 0.06 + intensity * 0.04);
+    source.connect(hp);
+    hp.connect(gain);
     gain.connect(ctx.destination);
     source.start();
 }
 
-// ===== Vibration mobile =====
-function tryVibrate(ms = 6) {
-    if (navigator.vibrate) {
-        try { navigator.vibrate(ms); } catch (e) {}
-    }
-}
-
-// ===== Mise à jour des variables CSS =====
-function setPull(yPx, ratio) {
-    const pct = (yPx / window.innerHeight) * 100;
-    intro.style.setProperty('--pull-y', `${pct}%`);
-    intro.style.setProperty('--pull-ratio', String(ratio));
-    intro.style.setProperty('--halo-y', `${Math.max(8, pct + 2)}%`);
-}
-
-// ===== Tilt de la tirette (rotation pendant le drag) =====
-function setPullTilt(deg) {
-    pull.style.transform = `translateX(-50%) rotate(${deg}deg)`;
-}
-function clearPullTilt() {
-    pull.style.transform = '';
+// Met à jour le rayon du cercle et la position de la tirette
+function setRingState(r, pullOff) {
+    intro.style.setProperty('--ring-r', `${r}px`);
+    intro.style.setProperty('--pull-offset', `${pullOff}px`);
 }
 
 // ===== Ouverture =====
-function openZipper(fromPosition = pullPosition) {
+function openIntro() {
     if (opening) return;
     opening = true;
     cancelAutoOpen();
-    pull.classList.remove('idle');
     intro.classList.remove('dragging');
     intro.classList.add('opening');
-    clearPullTilt();
 
-    const remainingRatio = 1 - (fromPosition / maxPull());
-    const duration = Math.max(800, Math.round(OPEN_DURATION * remainingRatio));
-
-    intro.querySelectorAll('.panel, .zipper-pull, .zipper-teeth').forEach((el) => {
-        el.style.transition = `clip-path ${duration}ms cubic-bezier(0.65, 0, 0.35, 1),
-                               top ${duration}ms cubic-bezier(0.65, 0, 0.35, 1),
-                               transform ${duration}ms cubic-bezier(0.65, 0, 0.35, 1)`;
-    });
-
-    requestAnimationFrame(() => {
-        setPull(maxPull(), 1);
-    });
-
-    const clickInterval = Math.max(40, Math.round(duration / 28));
-    autoOpenInterval = setInterval(() => {
-        playZipperClick(1.2);
-        tryVibrate(5);
-    }, clickInterval);
+    // Force la cible inline pour écraser ce que le drag a posé.
+    // Les transitions CSS (r 2.2s, transform 2.2s) prennent le relais à partir
+    // de la valeur courante, donc la continuité visuelle est garantie.
+    intro.style.setProperty('--ring-r', '1800px');
+    intro.style.setProperty('--pull-offset', '120vh');
 
     document.body.style.overflow = '';
-    setTimeout(() => {
-        clearInterval(autoOpenInterval);
-        autoOpenInterval = null;
-        playZipperClick(2);
-        tryVibrate(40);
-        intro.classList.add('gone');
-    }, duration + 80);
-}
+    playRingZip();
+    tryVibrate([8, 40, 6, 60, 8, 80, 20]);
 
-function snapBack() {
-    intro.classList.remove('dragging');
-    clearPullTilt();
-    intro.querySelectorAll('.panel, .zipper-pull, .zipper-teeth').forEach((el) => {
-        el.style.transition = `clip-path ${SNAP_BACK_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1),
-                               top ${SNAP_BACK_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1),
-                               transform ${SNAP_BACK_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    // Le voile entier fond pendant la dernière phase pour que la disparition
+    // ne soit jamais brutale, même si le cercle n'a pas atteint sa cible.
+    intro.style.transition = 'opacity 700ms cubic-bezier(0.4, 0, 0.15, 1) ' + (ANIM_DURATION - 700) + 'ms';
+    requestAnimationFrame(() => {
+        intro.style.opacity = '0';
     });
-    setPull(0, 0);
+
     setTimeout(() => {
-        if (!opening) pull.classList.add('idle');
-    }, SNAP_BACK_DURATION + 40);
+        intro.classList.add('gone');
+    }, ANIM_DURATION + 50);
 }
 
-// ===== Auto-ouverture =====
 function scheduleAutoOpen() {
     cancelAutoOpen();
     autoOpenTimer = setTimeout(() => {
-        if (!opening) openZipper(0);
+        if (!opening) openIntro();
     }, AUTO_OPEN_DELAY);
 }
 function cancelAutoOpen() {
@@ -161,99 +174,103 @@ function cancelAutoOpen() {
     }
 }
 
-// ===== Drag =====
-function onPointerDown(e) {
+// ===== Drag de la tirette =====
+function onPullDown(e) {
     if (opening) return;
     cancelAutoOpen();
     ensureAudioCtx();
-    const y = (e.touches ? e.touches[0].clientY : e.clientY);
-    const x = (e.touches ? e.touches[0].clientX : e.clientX);
+    e.preventDefault();
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
     dragStartY = y;
-    dragStartX = x;
-    dragStartOffset = pullPosition;
-    lastClickPos = pullPosition;
-    lastVibratePos = pullPosition;
+    dragOffset = 0;
+    lastClickPos = 0;
+    lastVibratePos = 0;
     intro.classList.add('dragging');
-    pull.classList.remove('idle');
-    playZipperClick(0.5);
+    playRingClick(0.6);
     tryVibrate(8);
 
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp, { once: true });
-    document.addEventListener('touchmove', onPointerMove, { passive: false });
-    document.addEventListener('touchend', onPointerUp, { once: true });
+    document.addEventListener('pointermove', onPullMove);
+    document.addEventListener('pointerup', onPullUp, { once: true });
+    document.addEventListener('touchmove', onPullMove, { passive: false });
+    document.addEventListener('touchend', onPullUp, { once: true });
 }
 
-function onPointerMove(e) {
+function onPullMove(e) {
     if (dragStartY === null || opening) return;
     if (e.cancelable) e.preventDefault();
-    const y = (e.touches ? e.touches[0].clientY : e.clientY);
-    const x = (e.touches ? e.touches[0].clientX : e.clientX);
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const dy = Math.max(0, dragStartY - y);  // uniquement vers le haut
+    dragOffset = Math.min(maxDrag(), dy);
 
-    pullPosition = Math.max(0, Math.min(maxPull(), dragStartOffset + (y - dragStartY)));
-    const ratio = pullPosition / maxPull();
+    const newR = BASE_R + dragOffset * DRAG_RATIO;
+    const newPullOff = BASE_PULL_OFFSET + dragOffset;
+    setRingState(newR, newPullOff);
 
-    setPull(pullPosition, ratio);
-
-    const dx = x - dragStartX;
-    const tilt = Math.max(-6, Math.min(6, dx / TILT_SENSITIVITY));
-    setPullTilt(tilt);
-
-    if (Math.abs(pullPosition - lastClickPos) >= CLICK_INTERVAL_PX) {
-        playZipperClick();
-        lastClickPos = pullPosition;
+    if (Math.abs(dragOffset - lastClickPos) >= CLICK_INTERVAL_PX) {
+        playRingClick();
+        lastClickPos = dragOffset;
     }
-    if (Math.abs(pullPosition - lastVibratePos) >= VIBRATE_INTERVAL_PX) {
+    if (Math.abs(dragOffset - lastVibratePos) >= VIBRATE_INTERVAL_PX) {
         tryVibrate(5);
-        lastVibratePos = pullPosition;
+        lastVibratePos = dragOffset;
     }
 }
 
-function onPointerUp() {
-    document.removeEventListener('pointermove', onPointerMove);
-    document.removeEventListener('touchmove', onPointerMove);
+function onPullUp() {
+    document.removeEventListener('pointermove', onPullMove);
+    document.removeEventListener('touchmove', onPullMove);
     if (opening) return;
 
-    const ratio = pullPosition / maxPull();
+    const ratio = dragOffset / maxDrag();
     if (ratio >= FULL_OPEN_THRESHOLD) {
-        openZipper(pullPosition);
+        // Continue l'ouverture jusqu'au bout
+        intro.classList.remove('dragging');
+        openIntro();
     } else {
-        snapBack();
-        pullPosition = 0;
+        // Snap back vers l'état initial
+        intro.classList.remove('dragging');
+        // Force une transition douce pour le retour
+        const els = [
+            document.querySelector('.ring-mask-circle'),
+            document.querySelector('.ring-teeth-outer'),
+            document.querySelector('.ring-teeth-inner'),
+            pull
+        ];
+        els.forEach((el) => {
+            if (el) el.style.transition = `r ${SNAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1), transform ${SNAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+        });
+        setRingState(BASE_R, BASE_PULL_OFFSET);
+        setTimeout(() => {
+            els.forEach((el) => { if (el) el.style.transition = ''; });
+        }, SNAP_DURATION + 50);
         scheduleAutoOpen();
     }
     dragStartY = null;
-    dragStartX = null;
-    dragStartOffset = 0;
+    dragOffset = 0;
 }
 
-pull.addEventListener('pointerdown', onPointerDown);
-pull.addEventListener('touchstart', onPointerDown, { passive: true });
+pull.addEventListener('pointerdown', onPullDown);
+pull.addEventListener('touchstart', onPullDown, { passive: false });
 
-// Clic n'importe où sur l'intro (hors tirette) : ouverture animée
+// Clic ailleurs sur l'intro = ouverture animée
 intro.addEventListener('click', (e) => {
     if (opening) return;
     if (e.target === pull || pull.contains(e.target)) return;
     ensureAudioCtx();
-    openZipper(0);
+    openIntro();
 });
 
-// Clavier : Entrée ou Espace ouvrent l'intro
 intro.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         ensureAudioCtx();
-        openZipper(0);
+        openIntro();
     }
 });
 
-// Annule l'auto-open dès que l'utilisateur survole la tirette
-pull.addEventListener('pointerenter', cancelAutoOpen);
-
 // État initial
-pull.classList.add('idle');
 document.body.style.overflow = 'hidden';
-setPull(0, 0);
+setRingState(BASE_R, BASE_PULL_OFFSET);
 scheduleAutoOpen();
 
 // ===== Reveal au scroll =====
