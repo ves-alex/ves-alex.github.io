@@ -224,6 +224,7 @@ async function loadTasks() {
   const { data, error } = await supabase
     .from("tasks")
     .select("*")
+    .is("completed_at", null)
     .order("created_at", { ascending: true });
   if (error) {
     console.error("loadTasks", error);
@@ -406,11 +407,32 @@ function render() {
         <div class="meta">Imp ${task.importance} · Urg ${task.urgency} · Énergie ${task.energy} · Score ${formatScore(score(task))}</div>
       </div>
       <div class="task-actions">
+        <button class="btn btn-icon btn-success" data-done="${task.id}" aria-label="Marquer comme faite">✓ Fait</button>
         <button class="btn btn-icon" data-edit="${task.id}" aria-label="Modifier">Modifier</button>
         <button class="btn btn-icon btn-danger" data-delete="${task.id}" aria-label="Supprimer">Supprimer</button>
       </div>
     `;
     list.appendChild(li);
+  });
+
+  list.querySelectorAll("button[data-done]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.done;
+      if (id === editingId) {
+        exitEditMode();
+        resetForm();
+      }
+      const { error } = await supabase
+        .from("tasks")
+        .update({ completed_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) {
+        console.error("complete", error);
+        return;
+      }
+      tasks = tasks.filter((t) => t.id !== id);
+      render();
+    });
   });
 
   list.querySelectorAll("button[data-edit]").forEach((btn) => {

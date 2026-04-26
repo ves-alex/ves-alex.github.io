@@ -270,6 +270,10 @@ html, body {
   color: var(--danger);
 }
 
+.btn-icon.btn-success:hover {
+  color: var(--accent);
+}
+
 .form-actions {
   display: flex;
   align-items: center;
