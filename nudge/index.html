@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nudge — Know Your Next Move</title>
+  <meta name="description" content="Nudge — un petit coup de pouce pour choisir ta prochaine action." />
+  <meta name="theme-color" content="#15171a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Nudge" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <section id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <h1>Nudge</h1>
+      <p class="subtitle">Know Your Next Move.</p>
+
+      <form id="auth-form" class="form">
+        <label>
+          Email
+          <input type="email" id="auth-email" required autocomplete="email" placeholder="toi@exemple.com" />
+        </label>
+        <label>
+          Mot de passe
+          <input type="password" id="auth-password" required autocomplete="current-password" minlength="6" placeholder="6 caractères minimum" />
+        </label>
+        <div id="auth-error" class="auth-error"></div>
+        <div class="form-actions auth-actions">
+          <button type="submit" id="signin-btn" class="btn btn-accent">Se connecter</button>
+          <button type="button" id="signup-btn" class="btn btn-primary">Créer un compte</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <main id="app" class="app hidden">
+    <header class="header">
+      <div class="header-row">
+        <div>
+          <h1>Nudge</h1>
+          <p class="subtitle">Know Your Next Move.</p>
+        </div>
+        <div class="user-zone">
+          <span id="user-email" class="user-email"></span>
+          <button id="signout-btn" class="btn btn-icon">Se déconnecter</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2 id="form-title">Ajouter une tâche</h2>
+      <form id="task-form" class="form">
+        <label>
+          Nom de la tâche
+          <input type="text" id="name" required placeholder="Ex. Répondre à Marc" />
+        </label>
+
+        <div class="row">
+          <label>
+            Importance
+            <input type="number" id="importance" min="1" max="10" value="5" required />
+          </label>
+          <label>
+            Urgence
+            <input type="number" id="urgency" min="1" max="10" value="5" required />
+          </label>
+          <label>
+            Énergie
+            <input type="number" id="energy" min="1" max="10" value="5" required />
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" id="submit-btn" class="btn btn-primary">Ajouter</button>
+          <button type="button" id="cancel-btn" class="btn btn-icon hidden">Annuler</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Mes tâches</h2>
+        <button id="suggest-btn" class="btn btn-accent">Trouve ma prochaine action</button>
+      </div>
+
+      <div id="suggestion" class="suggestion hidden"></div>
+
+      <ul id="task-list" class="task-list"></ul>
+      <p id="empty" class="empty">Aucune tâche pour l'instant.</p>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((err) => {
+          console.warn("Service worker non enregistré :", err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

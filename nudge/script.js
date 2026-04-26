@@ -1,0 +1,327 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const SUPABASE_URL = "https://dhmthosilfhudzygmsst.supabase.co";
+const SUPABASE_KEY = "sb_publishable_kd3N68yGfmPOlK75bkTAHA_QZ9sNK1_";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const LOCAL_STORAGE_KEY = "next-move.tasks";
+const ENERGY_FLOOR = 5;
+
+const authScreen = document.getElementById("auth-screen");
+const appScreen = document.getElementById("app");
+const authForm = document.getElementById("auth-form");
+const authEmail = document.getElementById("auth-email");
+const authPassword = document.getElementById("auth-password");
+const authError = document.getElementById("auth-error");
+const signupBtn = document.getElementById("signup-btn");
+const signoutBtn = document.getElementById("signout-btn");
+const userEmailEl = document.getElementById("user-email");
+
+const form = document.getElementById("task-form");
+const nameInput = document.getElementById("name");
+const importanceInput = document.getElementById("importance");
+const urgencyInput = document.getElementById("urgency");
+const energyInput = document.getElementById("energy");
+const list = document.getElementById("task-list");
+const empty = document.getElementById("empty");
+const suggestBtn = document.getElementById("suggest-btn");
+const suggestion = document.getElementById("suggestion");
+const formTitle = document.getElementById("form-title");
+const submitBtn = document.getElementById("submit-btn");
+const cancelBtn = document.getElementById("cancel-btn");
+
+let tasks = [];
+let editingId = null;
+let currentUser = null;
+
+authForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  await signIn();
+});
+
+signupBtn.addEventListener("click", async () => {
+  await signUp();
+});
+
+signoutBtn.addEventListener("click", async () => {
+  await supabase.auth.signOut();
+});
+
+async function signIn() {
+  authError.textContent = "";
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  if (!email || !password) return;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) authError.textContent = error.message;
+}
+
+async function signUp() {
+  authError.textContent = "";
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  if (!email || !password) {
+    authError.textContent = "Email et mot de passe requis.";
+    return;
+  }
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) {
+    authError.textContent = error.message;
+    return;
+  }
+  if (data.session) {
+    authError.textContent = "";
+  } else {
+    authError.textContent = "Compte créé. Vérifie ta boîte mail pour confirmer, puis reconnecte-toi.";
+  }
+}
+
+supabase.auth.onAuthStateChange(async (_event, session) => {
+  currentUser = session?.user ?? null;
+  if (currentUser) {
+    showApp();
+    await loadTasks();
+  } else {
+    showAuth();
+    tasks = [];
+    render();
+  }
+});
+
+function showApp() {
+  authScreen.classList.add("hidden");
+  appScreen.classList.remove("hidden");
+  userEmailEl.textContent = currentUser.email;
+  authEmail.value = "";
+  authPassword.value = "";
+}
+
+function showAuth() {
+  authScreen.classList.remove("hidden");
+  appScreen.classList.add("hidden");
+  authError.textContent = "";
+}
+
+async function loadTasks() {
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.error("loadTasks", error);
+    return;
+  }
+  tasks = data || [];
+  await maybeMigrateLocalTasks();
+  render();
+}
+
+async function maybeMigrateLocalTasks() {
+  const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (!raw) return;
+  let local;
+  try {
+    local = JSON.parse(raw);
+  } catch {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    return;
+  }
+  if (!Array.isArray(local) || local.length === 0) {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    return;
+  }
+  const ok = confirm(
+    `Tu as ${local.length} tâche(s) sauvegardée(s) localement sur cet appareil. Les importer dans ton compte Nudge ?`
+  );
+  if (ok) {
+    const rows = local.map((t) => ({
+      user_id: currentUser.id,
+      name: t.name,
+      importance: t.importance,
+      urgency: t.urgency,
+      energy: t.energy,
+    }));
+    const { data, error } = await supabase.from("tasks").insert(rows).select();
+    if (error) {
+      console.error("migration", error);
+      alert("Erreur lors de l'import : " + error.message);
+      return;
+    }
+    if (data) tasks = [...tasks, ...data];
+  }
+  localStorage.removeItem(LOCAL_STORAGE_KEY);
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = nameInput.value.trim();
+  if (!name || !currentUser) return;
+
+  const data = {
+    name,
+    importance: Number(importanceInput.value),
+    urgency: Number(urgencyInput.value),
+    energy: Number(energyInput.value),
+  };
+
+  if (editingId) {
+    const { data: updated, error } = await supabase
+      .from("tasks")
+      .update(data)
+      .eq("id", editingId)
+      .select()
+      .single();
+    if (error) {
+      console.error("update", error);
+      return;
+    }
+    const i = tasks.findIndex((t) => t.id === editingId);
+    if (i !== -1) tasks[i] = updated;
+    exitEditMode();
+  } else {
+    const { data: inserted, error } = await supabase
+      .from("tasks")
+      .insert({ ...data, user_id: currentUser.id })
+      .select()
+      .single();
+    if (error) {
+      console.error("insert", error);
+      return;
+    }
+    tasks.push(inserted);
+  }
+
+  resetForm();
+  render();
+});
+
+cancelBtn.addEventListener("click", () => {
+  exitEditMode();
+  resetForm();
+});
+
+function startEdit(id) {
+  const task = tasks.find((t) => t.id === id);
+  if (!task) return;
+  editingId = id;
+  nameInput.value = task.name;
+  importanceInput.value = task.importance;
+  urgencyInput.value = task.urgency;
+  energyInput.value = task.energy;
+  formTitle.textContent = "Modifier la tâche";
+  submitBtn.textContent = "Enregistrer";
+  cancelBtn.classList.remove("hidden");
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  nameInput.focus({ preventScroll: true });
+}
+
+function exitEditMode() {
+  editingId = null;
+  formTitle.textContent = "Ajouter une tâche";
+  submitBtn.textContent = "Ajouter";
+  cancelBtn.classList.add("hidden");
+  render();
+}
+
+function resetForm() {
+  form.reset();
+  importanceInput.value = 5;
+  urgencyInput.value = 5;
+  energyInput.value = 5;
+}
+
+suggestBtn.addEventListener("click", () => {
+  if (tasks.length === 0) {
+    suggestion.classList.remove("hidden");
+    suggestion.innerHTML = `<h3>Suggestion</h3><div class="pick">Ajoute d'abord au moins une tâche.</div>`;
+    return;
+  }
+
+  const ranked = [...tasks].sort((a, b) => score(b) - score(a));
+  const best = ranked[0];
+  const next = ranked.slice(1, 3);
+
+  const nextHtml = next.length
+    ? `<div class="next-up">
+         <div class="next-label">Ensuite</div>
+         ${next.map((t) => `
+           <div class="next-item">
+             <span class="next-name">${escapeHtml(t.name)}</span>
+             <span class="next-score">Score ${formatScore(score(t))}</span>
+           </div>
+         `).join("")}
+       </div>`
+    : "";
+
+  suggestion.classList.remove("hidden");
+  suggestion.innerHTML = `
+    <h3>Prochaine action</h3>
+    <div class="pick">${escapeHtml(best.name)}</div>
+    <div class="score">Score : ${formatScore(score(best))} ((importance ${best.importance} + urgence ${best.urgency}) ÷ ${Math.max(best.energy, ENERGY_FLOOR)}${best.energy < ENERGY_FLOOR ? ` — énergie ${best.energy} relevée au plancher ${ENERGY_FLOOR}` : ""})</div>
+    ${nextHtml}
+  `;
+});
+
+function score(task) {
+  return (task.importance + task.urgency) / Math.max(task.energy, ENERGY_FLOOR);
+}
+
+function formatScore(n) {
+  return Number.isInteger(n) ? n.toString() : n.toFixed(2);
+}
+
+function render() {
+  list.innerHTML = "";
+  if (tasks.length === 0) {
+    empty.classList.remove("hidden");
+    return;
+  }
+  empty.classList.add("hidden");
+
+  tasks.forEach((task) => {
+    const li = document.createElement("li");
+    li.className = "task-item" + (task.id === editingId ? " editing" : "");
+    li.innerHTML = `
+      <div>
+        <div class="name">${escapeHtml(task.name)}</div>
+        <div class="meta">Imp ${task.importance} · Urg ${task.urgency} · Énergie ${task.energy} · Score ${formatScore(score(task))}</div>
+      </div>
+      <div class="task-actions">
+        <button class="btn btn-icon" data-edit="${task.id}" aria-label="Modifier">Modifier</button>
+        <button class="btn btn-icon btn-danger" data-delete="${task.id}" aria-label="Supprimer">Supprimer</button>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+
+  list.querySelectorAll("button[data-edit]").forEach((btn) => {
+    btn.addEventListener("click", () => startEdit(btn.dataset.edit));
+  });
+
+  list.querySelectorAll("button[data-delete]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.delete;
+      if (id === editingId) {
+        exitEditMode();
+        resetForm();
+      }
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) {
+        console.error("delete", error);
+        return;
+      }
+      tasks = tasks.filter((t) => t.id !== id);
+      render();
+    });
+  });
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
