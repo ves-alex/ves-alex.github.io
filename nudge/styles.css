@@ -1,4 +1,5 @@
-:root {
+:root,
+:root[data-theme="graphite"] {
   --bg: #15171a;
   --surface: #1d2024;
   --surface-2: #24282d;
@@ -7,7 +8,60 @@
   --muted: #8a9098;
   --accent: #7aa2f7;
   --accent-strong: #5d87e6;
+  --accent-contrast: #0d1117;
   --danger: #e06c75;
+}
+
+:root[data-theme="ocean"] {
+  --bg: #0d1929;
+  --surface: #122439;
+  --surface-2: #182f48;
+  --border: #1f3a55;
+  --text: #d8e2ee;
+  --muted: #7c92ad;
+  --accent: #4cb8e0;
+  --accent-strong: #3a9bbe;
+  --accent-contrast: #06141f;
+  --danger: #e06c75;
+}
+
+:root[data-theme="forest"] {
+  --bg: #121a14;
+  --surface: #18241b;
+  --surface-2: #1f2e23;
+  --border: #2a3d2f;
+  --text: #dde5df;
+  --muted: #84968a;
+  --accent: #6ec27a;
+  --accent-strong: #5aa666;
+  --accent-contrast: #0a130c;
+  --danger: #e06c75;
+}
+
+:root[data-theme="onyx"] {
+  --bg: #000000;
+  --surface: #0a0a0a;
+  --surface-2: #141414;
+  --border: #1f1f1f;
+  --text: #f0f0f0;
+  --muted: #888888;
+  --accent: #ffffff;
+  --accent-strong: #d0d0d0;
+  --accent-contrast: #000000;
+  --danger: #ff7a7a;
+}
+
+:root[data-theme="sand"] {
+  --bg: #f5f1ea;
+  --surface: #ffffff;
+  --surface-2: #ebe6dd;
+  --border: #d9d2c5;
+  --text: #2a2620;
+  --muted: #8a8275;
+  --accent: #b86b3a;
+  --accent-strong: #99572d;
+  --accent-contrast: #ffffff;
+  --danger: #c4452f;
 }
 
 * {
@@ -188,12 +242,12 @@ html, body {
 }
 
 .btn-primary:hover {
-  background: #2c3138;
+  background: var(--border);
 }
 
 .btn-accent {
   background: var(--accent);
-  color: #0d1117;
+  color: var(--accent-contrast);
   font-weight: 500;
 }
 
@@ -229,7 +283,7 @@ html, body {
 
 .task-item.editing {
   border-color: var(--accent);
-  background: rgba(122, 162, 247, 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 .task-list {
@@ -268,8 +322,8 @@ html, body {
 }
 
 .suggestion {
-  background: linear-gradient(180deg, rgba(122, 162, 247, 0.12), rgba(122, 162, 247, 0.04));
-  border: 1px solid rgba(122, 162, 247, 0.4);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
@@ -298,7 +352,7 @@ html, body {
 .next-up {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid rgba(122, 162, 247, 0.2);
+  border-top: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -331,4 +385,122 @@ html, body {
 
 .hidden {
   display: none;
+}
+
+.settings-back {
+  margin-bottom: 16px;
+}
+
+.card-help {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: -8px 0 16px;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .theme-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.theme-swatch {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 6px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text);
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.theme-swatch:hover {
+  border-color: var(--accent);
+}
+
+.theme-swatch.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.swatch {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  border: 1px solid var(--border);
+  background-image: linear-gradient(135deg, var(--swatch-bg) 50%, var(--swatch-accent) 50%);
+}
+
+.theme-swatch.active .swatch {
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 4px var(--surface);
+}
+
+.swatch-graphite {
+  --swatch-bg: #15171a;
+  --swatch-accent: #7aa2f7;
+}
+
+.swatch-ocean {
+  --swatch-bg: #0d1929;
+  --swatch-accent: #4cb8e0;
+}
+
+.swatch-forest {
+  --swatch-bg: #121a14;
+  --swatch-accent: #6ec27a;
+}
+
+.swatch-onyx {
+  --swatch-bg: #000000;
+  --swatch-accent: #ffffff;
+}
+
+.swatch-sand {
+  --swatch-bg: #f5f1ea;
+  --swatch-accent: #b86b3a;
+}
+
+.theme-name {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.settings-form {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+.settings-form:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.settings-form h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.form-status {
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+.form-status.success {
+  color: var(--accent);
+}
+
+.form-status.error {
+  color: var(--danger);
 }

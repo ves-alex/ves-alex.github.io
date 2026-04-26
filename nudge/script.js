@@ -5,7 +5,32 @@ const SUPABASE_KEY = "sb_publishable_kd3N68yGfmPOlK75bkTAHA_QZ9sNK1_";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const LOCAL_STORAGE_KEY = "next-move.tasks";
+const THEME_STORAGE_KEY = "nudge.theme";
+const VALID_THEMES = ["graphite", "ocean", "forest", "onyx", "sand"];
+const THEME_META_COLORS = {
+  graphite: "#15171a",
+  ocean: "#0d1929",
+  forest: "#121a14",
+  onyx: "#000000",
+  sand: "#f5f1ea",
+};
 const ENERGY_FLOOR = 5;
+
+applyTheme(loadTheme());
+
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  return VALID_THEMES.includes(saved) ? saved : "graphite";
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  const metaColor = document.querySelector('meta[name="theme-color"]');
+  if (metaColor && THEME_META_COLORS[theme]) {
+    metaColor.setAttribute("content", THEME_META_COLORS[theme]);
+  }
+  localStorage.setItem(THEME_STORAGE_KEY, theme);
+}
 
 const authScreen = document.getElementById("auth-screen");
 const appScreen = document.getElementById("app");
@@ -30,6 +55,19 @@ const formTitle = document.getElementById("form-title");
 const submitBtn = document.getElementById("submit-btn");
 const cancelBtn = document.getElementById("cancel-btn");
 
+const settingsBtn = document.getElementById("settings-btn");
+const settingsBack = document.getElementById("settings-back");
+const tasksView = document.getElementById("tasks-view");
+const settingsView = document.getElementById("settings-view");
+const themeGrid = document.getElementById("theme-grid");
+const passwordForm = document.getElementById("password-form");
+const newPassword = document.getElementById("new-password");
+const newPasswordConfirm = document.getElementById("new-password-confirm");
+const passwordStatus = document.getElementById("password-status");
+const emailForm = document.getElementById("email-form");
+const newEmail = document.getElementById("new-email");
+const emailStatus = document.getElementById("email-status");
+
 let tasks = [];
 let editingId = null;
 let currentUser = null;
@@ -45,6 +83,84 @@ signupBtn.addEventListener("click", async () => {
 
 signoutBtn.addEventListener("click", async () => {
   await supabase.auth.signOut();
+});
+
+settingsBtn.addEventListener("click", () => {
+  tasksView.classList.add("hidden");
+  settingsView.classList.remove("hidden");
+  refreshThemeSelection();
+  passwordStatus.textContent = "";
+  passwordStatus.className = "form-status";
+  emailStatus.textContent = "";
+  emailStatus.className = "form-status";
+  passwordForm.reset();
+  emailForm.reset();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+settingsBack.addEventListener("click", () => {
+  settingsView.classList.add("hidden");
+  tasksView.classList.remove("hidden");
+});
+
+themeGrid.addEventListener("click", (e) => {
+  const btn = e.target.closest(".theme-swatch");
+  if (!btn) return;
+  const theme = btn.dataset.theme;
+  if (!VALID_THEMES.includes(theme)) return;
+  applyTheme(theme);
+  refreshThemeSelection();
+});
+
+function refreshThemeSelection() {
+  const active = document.documentElement.getAttribute("data-theme") || "graphite";
+  themeGrid.querySelectorAll(".theme-swatch").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.theme === active);
+  });
+}
+
+passwordForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  passwordStatus.className = "form-status";
+  passwordStatus.textContent = "";
+  const pw = newPassword.value;
+  const confirm = newPasswordConfirm.value;
+  if (pw.length < 6) {
+    passwordStatus.classList.add("error");
+    passwordStatus.textContent = "Au moins 6 caractères.";
+    return;
+  }
+  if (pw !== confirm) {
+    passwordStatus.classList.add("error");
+    passwordStatus.textContent = "Les deux mots de passe ne correspondent pas.";
+    return;
+  }
+  const { error } = await supabase.auth.updateUser({ password: pw });
+  if (error) {
+    passwordStatus.classList.add("error");
+    passwordStatus.textContent = error.message;
+    return;
+  }
+  passwordStatus.classList.add("success");
+  passwordStatus.textContent = "Mot de passe mis à jour.";
+  passwordForm.reset();
+});
+
+emailForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  emailStatus.className = "form-status";
+  emailStatus.textContent = "";
+  const email = newEmail.value.trim();
+  if (!email) return;
+  const { error } = await supabase.auth.updateUser({ email });
+  if (error) {
+    emailStatus.classList.add("error");
+    emailStatus.textContent = error.message;
+    return;
+  }
+  emailStatus.classList.add("success");
+  emailStatus.textContent = "Vérifie tes deux boîtes mail (ancienne et nouvelle) pour confirmer le changement.";
+  emailForm.reset();
 });
 
 async function signIn() {
@@ -94,6 +210,8 @@ function showApp() {
   userEmailEl.textContent = currentUser.email;
   authEmail.value = "";
   authPassword.value = "";
+  settingsView.classList.add("hidden");
+  tasksView.classList.remove("hidden");
 }
 
 function showAuth() {
