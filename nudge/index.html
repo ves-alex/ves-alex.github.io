@@ -100,6 +100,22 @@
     </header>
 
     <div id="tasks-view">
+    <section class="card progress-card">
+      <div class="progress-row">
+        <div class="progress-today">
+          <div class="progress-head">
+            <span class="progress-label">Aujourd'hui</span>
+            <span class="progress-count" id="today-count">0 / 0</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" id="today-fill"></div></div>
+        </div>
+        <div class="streak">
+          <div class="streak-value" id="streak-value">0</div>
+          <div class="streak-label" id="streak-label">jours d'affilée</div>
+        </div>
+      </div>
+    </section>
+
     <section class="card">
       <h2 id="form-title">Ajouter une tâche</h2>
       <form id="task-form" class="form">

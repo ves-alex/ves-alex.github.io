@@ -102,6 +102,8 @@ let tasks = [];
 let editingId = null;
 let currentUser = null;
 let isInRecoveryFlow = false;
+let todayCompletedCount = 0;
+let streakDays = 0;
 
 authForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -288,6 +290,7 @@ function renderArchives(archived) {
       if (data) tasks.push(data);
       await loadArchives();
       render();
+      loadTodayStats();
     });
   });
 
@@ -300,6 +303,7 @@ function renderArchives(archived) {
         return;
       }
       await loadArchives();
+      loadTodayStats();
     });
   });
 }
@@ -430,6 +434,8 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     showAuth();
     switchAuthMode("login");
     tasks = [];
+    todayCompletedCount = 0;
+    streakDays = 0;
     render();
   }
 });
@@ -464,6 +470,64 @@ async function loadTasks() {
   tasks = data || [];
   await maybeMigrateLocalTasks();
   render();
+  await loadTodayStats();
+}
+
+function dateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function computeStreak(dates) {
+  if (dates.length === 0) return 0;
+  const set = new Set(dates.map(dateKey));
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  if (!set.has(dateKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!set.has(dateKey(cursor))) return 0;
+  }
+  let n = 0;
+  while (set.has(dateKey(cursor))) {
+    n += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return n;
+}
+
+async function loadTodayStats() {
+  if (!currentUser) return;
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("completed_at")
+    .gte("completed_at", sixtyDaysAgo.toISOString())
+    .not("completed_at", "is", null);
+  if (error) {
+    console.error("loadTodayStats", error);
+    return;
+  }
+  const todayKey = dateKey(new Date());
+  const dates = (data || []).map((r) => new Date(r.completed_at));
+  todayCompletedCount = dates.filter((d) => dateKey(d) === todayKey).length;
+  streakDays = computeStreak(dates);
+  renderProgressBar();
+}
+
+function renderProgressBar() {
+  const total = todayCompletedCount + tasks.length;
+  const ratio = total > 0 ? todayCompletedCount / total : 0;
+  const todayCountEl = document.getElementById("today-count");
+  const todayFillEl = document.getElementById("today-fill");
+  const streakValueEl = document.getElementById("streak-value");
+  const streakLabelEl = document.getElementById("streak-label");
+  if (todayCountEl) todayCountEl.textContent = `${todayCompletedCount} / ${total}`;
+  if (todayFillEl) todayFillEl.style.width = `${Math.round(ratio * 100)}%`;
+  if (streakValueEl) streakValueEl.textContent = streakDays;
+  if (streakLabelEl) streakLabelEl.textContent = streakDays === 1 ? "jour d'affilée" : "jours d'affilée";
 }
 
 async function maybeMigrateLocalTasks() {
@@ -665,6 +729,7 @@ function formatScore(n) {
 }
 
 function render() {
+  renderProgressBar();
   list.innerHTML = "";
   if (tasks.length === 0) {
     empty.classList.remove("hidden");
@@ -710,6 +775,7 @@ function render() {
       }
       tasks = tasks.filter((t) => t.id !== id);
       render();
+      loadTodayStats();
     });
   });
 
