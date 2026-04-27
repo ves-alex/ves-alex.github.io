@@ -288,6 +288,8 @@ function renderArchives(archived) {
   statMonth.textContent = countMonth;
   statTotal.textContent = archived.length;
 
+  renderActivityHeatmap(archived);
+
   archivesList.innerHTML = "";
   if (archived.length === 0) {
     archivesEmpty.classList.remove("hidden");
@@ -343,6 +345,44 @@ function renderArchives(archived) {
       loadTodayStats();
     });
   });
+}
+
+function renderActivityHeatmap(archived) {
+  const grid = document.getElementById("activity-grid");
+  if (!grid) return;
+
+  const counts = new Map();
+  archived.forEach((t) => {
+    if (!t.completed_at) return;
+    const k = dateKey(new Date(t.completed_at));
+    counts.set(k, (counts.get(k) || 0) + 1);
+  });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - 364);
+  while (start.getDay() !== 1) {
+    start.setDate(start.getDate() - 1);
+  }
+
+  grid.innerHTML = "";
+  const cursor = new Date(start);
+  while (cursor <= today) {
+    const k = dateKey(cursor);
+    const count = counts.get(k) || 0;
+    const cell = document.createElement("div");
+    cell.className = "activity-cell";
+    if (count >= 4) cell.classList.add("lvl-4");
+    else if (count >= 3) cell.classList.add("lvl-3");
+    else if (count >= 2) cell.classList.add("lvl-2");
+    else if (count >= 1) cell.classList.add("lvl-1");
+    const dateLabel = cursor.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    cell.title = count === 0 ? `Aucune tâche le ${dateLabel}` : `${count} tâche${count > 1 ? "s" : ""} le ${dateLabel}`;
+    grid.appendChild(cell);
+    cursor.setDate(cursor.getDate() + 1);
+  }
 }
 
 function formatCompletedAt(iso) {
