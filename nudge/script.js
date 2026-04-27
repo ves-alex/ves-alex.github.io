@@ -58,6 +58,15 @@ const importanceInput = document.getElementById("importance");
 const urgencyInput = document.getElementById("urgency");
 const energyInput = document.getElementById("energy");
 const dueDateInput = document.getElementById("due-date");
+
+const dueDatePicker = window.flatpickr ? window.flatpickr(dueDateInput, {
+  locale: window.flatpickr.l10ns?.fr || "default",
+  dateFormat: "Y-m-d",
+  altInput: true,
+  altFormat: "j F Y",
+  allowInput: false,
+  disableMobile: true,
+}) : null;
 const list = document.getElementById("task-list");
 const empty = document.getElementById("empty");
 const suggestBtn = document.getElementById("suggest-btn");
@@ -414,7 +423,11 @@ function startEdit(id) {
   importanceInput.value = task.importance;
   urgencyInput.value = task.urgency;
   energyInput.value = task.energy;
-  dueDateInput.value = task.due_date || "";
+  if (dueDatePicker) {
+    dueDatePicker.setDate(task.due_date || null, false);
+  } else {
+    dueDateInput.value = task.due_date || "";
+  }
   formTitle.textContent = "Modifier la tâche";
   submitBtn.textContent = "Enregistrer";
   cancelBtn.classList.remove("hidden");
@@ -436,7 +449,11 @@ function resetForm() {
   importanceInput.value = 5;
   urgencyInput.value = 5;
   energyInput.value = 5;
-  dueDateInput.value = "";
+  if (dueDatePicker) {
+    dueDatePicker.clear();
+  } else {
+    dueDateInput.value = "";
+  }
 }
 
 suggestBtn.addEventListener("click", () => {
