@@ -41,6 +41,16 @@ const authError = document.getElementById("auth-error");
 const signupBtn = document.getElementById("signup-btn");
 const signoutBtn = document.getElementById("signout-btn");
 const userEmailEl = document.getElementById("user-email");
+const forgotLink = document.getElementById("forgot-link");
+const forgotForm = document.getElementById("forgot-form");
+const forgotEmail = document.getElementById("forgot-email");
+const forgotStatus = document.getElementById("forgot-status");
+const forgotBack = document.getElementById("forgot-back");
+const resetForm = document.getElementById("reset-form");
+const resetPassword = document.getElementById("reset-password");
+const resetPasswordConfirm = document.getElementById("reset-password-confirm");
+const resetStatus = document.getElementById("reset-status");
+const authForms = document.querySelectorAll(".auth-mode");
 
 const form = document.getElementById("task-form");
 const nameInput = document.getElementById("name");
@@ -71,6 +81,7 @@ const emailStatus = document.getElementById("email-status");
 let tasks = [];
 let editingId = null;
 let currentUser = null;
+let isInRecoveryFlow = false;
 
 authForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -84,6 +95,65 @@ signupBtn.addEventListener("click", async () => {
 signoutBtn.addEventListener("click", async () => {
   await supabase.auth.signOut();
 });
+
+forgotLink.addEventListener("click", () => switchAuthMode("forgot"));
+forgotBack.addEventListener("click", () => switchAuthMode("login"));
+
+forgotForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  forgotStatus.className = "form-status";
+  forgotStatus.textContent = "";
+  const email = forgotEmail.value.trim();
+  if (!email) return;
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) {
+    forgotStatus.classList.add("error");
+    forgotStatus.textContent = error.message;
+    return;
+  }
+  forgotStatus.classList.add("success");
+  forgotStatus.textContent = "Lien envoyé. Vérifie ta boîte mail.";
+  forgotForm.reset();
+});
+
+resetForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  resetStatus.className = "form-status";
+  resetStatus.textContent = "";
+  const pw = resetPassword.value;
+  const confirm = resetPasswordConfirm.value;
+  if (pw.length < 6) {
+    resetStatus.classList.add("error");
+    resetStatus.textContent = "Au moins 6 caractères.";
+    return;
+  }
+  if (pw !== confirm) {
+    resetStatus.classList.add("error");
+    resetStatus.textContent = "Les deux mots de passe ne correspondent pas.";
+    return;
+  }
+  const { error } = await supabase.auth.updateUser({ password: pw });
+  if (error) {
+    resetStatus.classList.add("error");
+    resetStatus.textContent = error.message;
+    return;
+  }
+  resetStatus.classList.add("success");
+  resetStatus.textContent = "Mot de passe mis à jour. Connexion en cours…";
+  resetForm.reset();
+});
+
+function switchAuthMode(mode) {
+  authForms.forEach((f) => {
+    f.classList.toggle("hidden", f.dataset.mode !== mode);
+  });
+  authError.textContent = "";
+  forgotStatus.textContent = "";
+  forgotStatus.className = "form-status";
+  resetStatus.textContent = "";
+  resetStatus.className = "form-status";
+}
 
 settingsBtn.addEventListener("click", () => {
   tasksView.classList.add("hidden");
@@ -192,13 +262,28 @@ async function signUp() {
   }
 }
 
-supabase.auth.onAuthStateChange(async (_event, session) => {
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    isInRecoveryFlow = true;
+    currentUser = session?.user ?? null;
+    showAuth();
+    switchAuthMode("reset");
+    return;
+  }
+
+  if (event === "USER_UPDATED" && isInRecoveryFlow) {
+    isInRecoveryFlow = false;
+  } else if (isInRecoveryFlow) {
+    return;
+  }
+
   currentUser = session?.user ?? null;
   if (currentUser) {
     showApp();
     await loadTasks();
   } else {
     showAuth();
+    switchAuthMode("login");
     tasks = [];
     render();
   }
