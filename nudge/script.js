@@ -483,9 +483,12 @@ function render() {
   }
   empty.classList.add("hidden");
 
-  tasks.forEach((task) => {
+  const sorted = [...tasks].sort((a, b) => score(b) - score(a));
+  sorted.forEach((task, idx) => {
     const li = document.createElement("li");
-    li.className = "task-item" + (task.id === editingId ? " editing" : "");
+    li.className = "task-item"
+      + (task.id === editingId ? " editing" : "")
+      + (idx === 0 && sorted.length > 1 ? " top-pick" : "");
     li.innerHTML = `
       <div>
         <div class="name">${escapeHtml(task.name)}</div>
