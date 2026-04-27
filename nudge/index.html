@@ -263,11 +263,13 @@
       </section>
 
       <section class="card">
-        <h2>Activité</h2>
+        <div class="card-head">
+          <h2>Activité</h2>
+          <span class="card-meta" id="activity-range"></span>
+        </div>
         <p class="card-help">Tes tâches accomplies sur les 12 derniers mois. Plus la case est foncée, plus tu en as fait ce jour-là.</p>
         <div class="activity-scroll">
-          <div class="activity-months" id="activity-months"></div>
-          <div class="activity-grid" id="activity-grid"></div>
+          <div class="activity-board" id="activity-board"></div>
         </div>
         <div class="activity-tooltip hidden" id="activity-tooltip"></div>
         <div class="activity-legend">

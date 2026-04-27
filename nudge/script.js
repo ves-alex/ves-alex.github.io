@@ -348,8 +348,8 @@ function renderArchives(archived) {
 }
 
 function renderActivityHeatmap(archived) {
-  const grid = document.getElementById("activity-grid");
-  if (!grid) return;
+  const board = document.getElementById("activity-board");
+  if (!board) return;
 
   const counts = new Map();
   archived.forEach((t) => {
@@ -367,21 +367,38 @@ function renderActivityHeatmap(archived) {
     start.setDate(start.getDate() - 1);
   }
 
-  grid.innerHTML = "";
-  const cursor = new Date(start);
+  const totalDays = Math.floor((today - start) / 86400000) + 1;
+  const totalWeeks = Math.ceil(totalDays / 7);
+
+  board.innerHTML = "";
+  board.style.gridTemplateColumns = `auto repeat(${totalWeeks}, 11px)`;
+
+  const dayLabels = ["lun", "", "mer", "", "ven", "", ""];
+  for (let i = 0; i < 7; i++) {
+    if (!dayLabels[i]) continue;
+    const span = document.createElement("span");
+    span.className = "activity-day-label";
+    span.textContent = dayLabels[i];
+    span.style.gridRow = String(i + 2);
+    board.appendChild(span);
+  }
+
   const monthMarks = [];
   let lastMonth = -1;
-  let week = 0;
-  let dayInWeek = 0;
+  let lastYear = -1;
+  const cursor = new Date(start);
   while (cursor <= today) {
+    const dayOffset = Math.floor((cursor - start) / 86400000);
+    const week = Math.floor(dayOffset / 7);
+    const dayInWeek = dayOffset % 7;
+
     if (cursor.getMonth() !== lastMonth) {
       let label = cursor.toLocaleDateString("fr-FR", { month: "short" });
       if (label.endsWith(".")) label = label.slice(0, -1);
-      if (cursor.getMonth() === 0 || monthMarks.length === 0) {
-        label += " " + cursor.getFullYear();
-      }
-      monthMarks.push({ label, week: week + 1 });
+      const isYearChange = lastYear !== -1 && cursor.getFullYear() !== lastYear;
+      monthMarks.push({ label, week, isYearChange });
       lastMonth = cursor.getMonth();
+      lastYear = cursor.getFullYear();
     }
 
     const k = dateKey(cursor);
@@ -392,35 +409,36 @@ function renderActivityHeatmap(archived) {
     else if (count >= 3) cell.classList.add("lvl-3");
     else if (count >= 2) cell.classList.add("lvl-2");
     else if (count >= 1) cell.classList.add("lvl-1");
+    cell.style.gridColumn = String(week + 2);
+    cell.style.gridRow = String(dayInWeek + 2);
     const dateLabel = cursor.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
     cell.dataset.tooltip = count === 0 ? `Aucune tâche · ${dateLabel}` : `${count} tâche${count > 1 ? "s" : ""} · ${dateLabel}`;
-    grid.appendChild(cell);
+    board.appendChild(cell);
 
     cursor.setDate(cursor.getDate() + 1);
-    dayInWeek += 1;
-    if (dayInWeek === 7) {
-      dayInWeek = 0;
-      week += 1;
-    }
   }
-  const totalWeeks = week + (dayInWeek > 0 ? 1 : 0);
 
-  const monthsRow = document.getElementById("activity-months");
-  if (monthsRow) {
-    monthsRow.innerHTML = "";
-    monthsRow.style.gridTemplateColumns = `repeat(${totalWeeks}, 11px)`;
-    for (let i = 0; i < monthMarks.length; i++) {
-      const m = monthMarks[i];
-      const next = monthMarks[i + 1];
-      const endCol = next ? next.week : totalWeeks + 1;
-      if (endCol - m.week < 2) continue;
-      const span = document.createElement("span");
-      span.className = "activity-month-label";
-      span.textContent = m.label;
-      span.style.gridColumnStart = m.week;
-      span.style.gridColumnEnd = endCol;
-      monthsRow.appendChild(span);
-    }
+  for (let i = 0; i < monthMarks.length; i++) {
+    const m = monthMarks[i];
+    const next = monthMarks[i + 1];
+    const startCol = m.week + 2;
+    const endCol = next ? next.week + 2 : totalWeeks + 2;
+    if (endCol - startCol < 2) continue;
+    const span = document.createElement("span");
+    span.className = "activity-month-label";
+    if (m.isYearChange) span.classList.add("year-change");
+    span.textContent = m.label;
+    span.style.gridColumn = `${startCol} / ${endCol}`;
+    board.appendChild(span);
+  }
+
+  const range = document.getElementById("activity-range");
+  if (range) {
+    const fmt = (d) => {
+      let label = d.toLocaleDateString("fr-FR", { month: "short", year: "numeric" });
+      return label.replace(".", "");
+    };
+    range.textContent = `${fmt(start)} → ${fmt(today)}`;
   }
 
   bindActivityTooltip();
@@ -429,10 +447,10 @@ function renderActivityHeatmap(archived) {
 let activityTooltipBound = false;
 function bindActivityTooltip() {
   if (activityTooltipBound) return;
-  const grid = document.getElementById("activity-grid");
+  const board = document.getElementById("activity-board");
   const tooltip = document.getElementById("activity-tooltip");
-  if (!grid || !tooltip) return;
-  grid.addEventListener("mousemove", (e) => {
+  if (!board || !tooltip) return;
+  board.addEventListener("mousemove", (e) => {
     const cell = e.target.closest(".activity-cell");
     if (!cell || !cell.dataset.tooltip) {
       tooltip.classList.add("hidden");
@@ -444,7 +462,7 @@ function bindActivityTooltip() {
     tooltip.style.left = `${rect.left + rect.width / 2}px`;
     tooltip.style.top = `${rect.top}px`;
   });
-  grid.addEventListener("mouseleave", () => {
+  board.addEventListener("mouseleave", () => {
     tooltip.classList.add("hidden");
   });
   activityTooltipBound = true;
