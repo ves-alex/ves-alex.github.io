@@ -371,7 +371,7 @@ function renderActivityHeatmap(archived) {
   const totalWeeks = Math.ceil(totalDays / 7);
 
   board.innerHTML = "";
-  board.style.gridTemplateColumns = `auto repeat(${totalWeeks}, 11px)`;
+  board.style.gridTemplateColumns = `auto repeat(${totalWeeks}, 10px)`;
 
   const dayLabels = ["lun", "", "mer", "", "ven", "", ""];
   for (let i = 0; i < 7; i++) {

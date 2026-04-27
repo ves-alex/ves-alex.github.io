@@ -475,10 +475,29 @@ html, body {
 
 .activity-scroll {
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   margin: 0 -4px;
   padding-left: 4px;
   padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.activity-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.activity-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.activity-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.activity-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
 
 .card-meta {
@@ -489,7 +508,7 @@ html, body {
 
 .activity-board {
   display: grid;
-  grid-template-rows: 14px repeat(7, 11px);
+  grid-template-rows: 14px repeat(7, 10px);
   gap: 2px;
 }
 
@@ -497,7 +516,7 @@ html, body {
   grid-column: 1;
   font-size: 0.66rem;
   color: var(--muted);
-  line-height: 11px;
+  line-height: 10px;
   padding-right: 8px;
   text-align: right;
 }
@@ -523,8 +542,8 @@ html, body {
 }
 
 .activity-cell {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   background: var(--surface-2);
   border: 1px solid var(--border);
