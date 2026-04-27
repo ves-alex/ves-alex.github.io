@@ -42,6 +42,7 @@ const signupBtn = document.getElementById("signup-btn");
 const signoutBtn = document.getElementById("signout-btn");
 const userEmailEl = document.getElementById("user-email");
 const forgotLink = document.getElementById("forgot-link");
+const googleBtn = document.getElementById("google-btn");
 const forgotForm = document.getElementById("forgot-form");
 const forgotEmail = document.getElementById("forgot-email");
 const forgotStatus = document.getElementById("forgot-status");
@@ -117,6 +118,18 @@ signoutBtn.addEventListener("click", async () => {
 
 forgotLink.addEventListener("click", () => switchAuthMode("forgot"));
 forgotBack.addEventListener("click", () => switchAuthMode("login"));
+
+googleBtn.addEventListener("click", async () => {
+  authError.textContent = "";
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo },
+  });
+  if (error) {
+    authError.textContent = error.message;
+  }
+});
 
 forgotForm.addEventListener("submit", async (e) => {
   e.preventDefault();

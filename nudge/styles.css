@@ -176,6 +176,43 @@ html, body {
   text-decoration: underline;
 }
 
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 4px 0;
+}
+
+.oauth-divider::before,
+.oauth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.btn-oauth {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 500;
+  width: 100%;
+}
+
+.btn-oauth:hover {
+  background: var(--border);
+}
+
+.btn-oauth svg {
+  flex-shrink: 0;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
