@@ -307,6 +307,46 @@ html, body {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+.task-item.archived .name {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+  color: var(--muted);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
 .task-item.top-pick {
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   position: relative;

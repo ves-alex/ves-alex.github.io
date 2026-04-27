@@ -77,8 +77,17 @@ const cancelBtn = document.getElementById("cancel-btn");
 
 const settingsBtn = document.getElementById("settings-btn");
 const settingsBack = document.getElementById("settings-back");
+const archivesBtn = document.getElementById("archives-btn");
+const archivesBack = document.getElementById("archives-back");
+const archivesList = document.getElementById("archives-list");
+const archivesEmpty = document.getElementById("archives-empty");
+const statToday = document.getElementById("stat-today");
+const statWeek = document.getElementById("stat-week");
+const statMonth = document.getElementById("stat-month");
+const statTotal = document.getElementById("stat-total");
 const tasksView = document.getElementById("tasks-view");
 const settingsView = document.getElementById("settings-view");
+const archivesView = document.getElementById("archives-view");
 const themeGrid = document.getElementById("theme-grid");
 const passwordForm = document.getElementById("password-form");
 const newPassword = document.getElementById("new-password");
@@ -182,6 +191,119 @@ settingsBack.addEventListener("click", () => {
   settingsView.classList.add("hidden");
   tasksView.classList.remove("hidden");
 });
+
+archivesBtn.addEventListener("click", async () => {
+  tasksView.classList.add("hidden");
+  settingsView.classList.add("hidden");
+  archivesView.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  await loadArchives();
+});
+
+archivesBack.addEventListener("click", () => {
+  archivesView.classList.add("hidden");
+  tasksView.classList.remove("hidden");
+});
+
+async function loadArchives() {
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("*")
+    .not("completed_at", "is", null)
+    .order("completed_at", { ascending: false });
+  if (error) {
+    console.error("loadArchives", error);
+    return;
+  }
+  renderArchives(data || []);
+}
+
+function renderArchives(archived) {
+  const now = new Date();
+  const startOfToday = new Date(now); startOfToday.setHours(0, 0, 0, 0);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
+
+  let countToday = 0, countWeek = 0, countMonth = 0;
+  for (const t of archived) {
+    const d = new Date(t.completed_at);
+    if (d >= startOfToday) countToday++;
+    if (d >= sevenDaysAgo) countWeek++;
+    if (d >= thirtyDaysAgo) countMonth++;
+  }
+  statToday.textContent = countToday;
+  statWeek.textContent = countWeek;
+  statMonth.textContent = countMonth;
+  statTotal.textContent = archived.length;
+
+  archivesList.innerHTML = "";
+  if (archived.length === 0) {
+    archivesEmpty.classList.remove("hidden");
+    return;
+  }
+  archivesEmpty.classList.add("hidden");
+
+  archived.forEach((task) => {
+    const li = document.createElement("li");
+    li.className = "task-item archived";
+    li.innerHTML = `
+      <div>
+        <div class="name">${escapeHtml(task.name)}</div>
+        <div class="meta">Faite ${formatCompletedAt(task.completed_at)} · Score ${formatScore(score(task))}</div>
+      </div>
+      <div class="task-actions">
+        <button class="btn btn-icon" data-restore="${task.id}" aria-label="Restaurer">⟲ Restaurer</button>
+        <button class="btn btn-icon btn-danger" data-purge="${task.id}" aria-label="Supprimer">Supprimer</button>
+      </div>
+    `;
+    archivesList.appendChild(li);
+  });
+
+  archivesList.querySelectorAll("button[data-restore]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.restore;
+      const { data, error } = await supabase
+        .from("tasks")
+        .update({ completed_at: null })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) {
+        console.error("restore", error);
+        return;
+      }
+      if (data) tasks.push(data);
+      await loadArchives();
+      render();
+    });
+  });
+
+  archivesList.querySelectorAll("button[data-purge]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.purge;
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) {
+        console.error("purge", error);
+        return;
+      }
+      await loadArchives();
+    });
+  });
+}
+
+function formatCompletedAt(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 60000);
+  if (diff < 1) return "à l'instant";
+  if (diff < 60) return `il y a ${diff} min`;
+  if (diff < 1440) return `il y a ${Math.floor(diff / 60)} h`;
+  const days = Math.floor(diff / 1440);
+  if (days === 1) return "hier";
+  if (days < 7) return `il y a ${days} j`;
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+}
 
 themeGrid.addEventListener("click", (e) => {
   const btn = e.target.closest(".theme-swatch");
@@ -306,6 +428,7 @@ function showApp() {
   authEmail.value = "";
   authPassword.value = "";
   settingsView.classList.add("hidden");
+  archivesView.classList.add("hidden");
   tasksView.classList.remove("hidden");
 }
 

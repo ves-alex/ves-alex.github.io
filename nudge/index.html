@@ -80,6 +80,7 @@
         </div>
         <div class="user-zone">
           <span id="user-email" class="user-email"></span>
+          <button id="archives-btn" class="btn btn-icon">Archives</button>
           <button id="settings-btn" class="btn btn-icon">Paramètres</button>
           <button id="signout-btn" class="btn btn-icon">Se déconnecter</button>
         </div>
@@ -192,6 +193,38 @@
           <div id="email-status" class="form-status"></div>
           <button type="submit" class="btn btn-primary">Mettre à jour</button>
         </form>
+      </section>
+    </div>
+
+    <div id="archives-view" class="hidden">
+      <button id="archives-back" class="btn btn-icon settings-back">← Retour aux tâches</button>
+
+      <section class="card">
+        <h2>Bilan</h2>
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-value" id="stat-today">0</div>
+            <div class="stat-label">Aujourd'hui</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-week">0</div>
+            <div class="stat-label">7 derniers jours</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-month">0</div>
+            <div class="stat-label">30 derniers jours</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Tâches faites</h2>
+        <ul id="archives-list" class="task-list"></ul>
+        <p id="archives-empty" class="empty">Aucune tâche archivée pour l'instant.</p>
       </section>
     </div>
   </main>
