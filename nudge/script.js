@@ -57,6 +57,7 @@ const nameInput = document.getElementById("name");
 const importanceInput = document.getElementById("importance");
 const urgencyInput = document.getElementById("urgency");
 const energyInput = document.getElementById("energy");
+const dueDateInput = document.getElementById("due-date");
 const list = document.getElementById("task-list");
 const empty = document.getElementById("empty");
 const suggestBtn = document.getElementById("suggest-btn");
@@ -366,6 +367,7 @@ form.addEventListener("submit", async (e) => {
     importance: Number(importanceInput.value),
     urgency: Number(urgencyInput.value),
     energy: Number(energyInput.value),
+    due_date: dueDateInput.value || null,
   };
 
   if (editingId) {
@@ -412,6 +414,7 @@ function startEdit(id) {
   importanceInput.value = task.importance;
   urgencyInput.value = task.urgency;
   energyInput.value = task.energy;
+  dueDateInput.value = task.due_date || "";
   formTitle.textContent = "Modifier la tâche";
   submitBtn.textContent = "Enregistrer";
   cancelBtn.classList.remove("hidden");
@@ -433,6 +436,7 @@ function resetForm() {
   importanceInput.value = 5;
   urgencyInput.value = 5;
   energyInput.value = 5;
+  dueDateInput.value = "";
 }
 
 suggestBtn.addEventListener("click", () => {
@@ -468,7 +472,39 @@ suggestBtn.addEventListener("click", () => {
 });
 
 function score(task) {
-  return (task.importance + task.urgency) / Math.max(task.energy, ENERGY_FLOOR);
+  return (task.importance + effectiveUrgency(task)) / Math.max(task.energy, ENERGY_FLOOR);
+}
+
+function effectiveUrgency(task) {
+  const dueBoost = urgencyFromDueDate(task.due_date);
+  return Math.max(task.urgency, dueBoost);
+}
+
+function urgencyFromDueDate(dueDate) {
+  if (!dueDate) return 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate + "T00:00:00");
+  const days = Math.floor((due - today) / 86400000);
+  if (days <= 0) return 10;
+  if (days === 1) return 9;
+  if (days <= 3) return 8;
+  if (days <= 7) return 6;
+  if (days <= 14) return 5;
+  return 0;
+}
+
+function formatDueDate(dueDate) {
+  if (!dueDate) return "";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const due = new Date(dueDate + "T00:00:00");
+  const days = Math.floor((due - today) / 86400000);
+  if (days < 0) return `en retard de ${-days} j`;
+  if (days === 0) return "aujourd'hui";
+  if (days === 1) return "demain";
+  if (days <= 7) return `dans ${days} j`;
+  return due.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
 function formatScore(n) {
@@ -489,9 +525,10 @@ function render() {
     li.className = "task-item"
       + (task.id === editingId ? " editing" : "")
       + (idx === 0 && sorted.length > 1 ? " top-pick" : "");
+    const dueLabel = task.due_date ? `<span class="due-pill ${urgencyFromDueDate(task.due_date) >= 9 ? "due-urgent" : ""}">⏱ ${formatDueDate(task.due_date)}</span>` : "";
     li.innerHTML = `
       <div>
-        <div class="name">${escapeHtml(task.name)}</div>
+        <div class="name">${escapeHtml(task.name)} ${dueLabel}</div>
         <div class="meta">Imp ${task.importance} · Urg ${task.urgency} · Énergie ${task.energy} · Score ${formatScore(score(task))}</div>
       </div>
       <div class="task-actions">

@@ -351,6 +351,31 @@ html, body {
   font-weight: 500;
 }
 
+.label-hint {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.85em;
+}
+
+.due-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  vertical-align: middle;
+}
+
+.due-pill.due-urgent {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
 .empty {
   color: var(--muted);
   text-align: center;
