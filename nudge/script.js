@@ -379,10 +379,36 @@ function renderActivityHeatmap(archived) {
     else if (count >= 2) cell.classList.add("lvl-2");
     else if (count >= 1) cell.classList.add("lvl-1");
     const dateLabel = cursor.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
-    cell.title = count === 0 ? `Aucune tâche le ${dateLabel}` : `${count} tâche${count > 1 ? "s" : ""} le ${dateLabel}`;
+    cell.dataset.tooltip = count === 0 ? `Aucune tâche · ${dateLabel}` : `${count} tâche${count > 1 ? "s" : ""} · ${dateLabel}`;
     grid.appendChild(cell);
     cursor.setDate(cursor.getDate() + 1);
   }
+
+  bindActivityTooltip();
+}
+
+let activityTooltipBound = false;
+function bindActivityTooltip() {
+  if (activityTooltipBound) return;
+  const grid = document.getElementById("activity-grid");
+  const tooltip = document.getElementById("activity-tooltip");
+  if (!grid || !tooltip) return;
+  grid.addEventListener("mousemove", (e) => {
+    const cell = e.target.closest(".activity-cell");
+    if (!cell || !cell.dataset.tooltip) {
+      tooltip.classList.add("hidden");
+      return;
+    }
+    tooltip.textContent = cell.dataset.tooltip;
+    tooltip.classList.remove("hidden");
+    const rect = cell.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + rect.width / 2}px`;
+    tooltip.style.top = `${rect.top}px`;
+  });
+  grid.addEventListener("mouseleave", () => {
+    tooltip.classList.add("hidden");
+  });
+  activityTooltipBound = true;
 }
 
 function formatCompletedAt(iso) {

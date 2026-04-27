@@ -531,6 +531,31 @@ html, body {
   margin: 0 4px;
 }
 
+.activity-cell {
+  cursor: default;
+  transition: outline 0.1s;
+}
+
+.activity-cell:hover {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.activity-tooltip {
+  position: fixed;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
 .task-item.top-pick {
   border-color: color-mix(in srgb, var(--accent) 50%, transparent);
   position: relative;
