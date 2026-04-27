@@ -114,6 +114,10 @@
           <div class="streak-label" id="streak-label">jours d'affilée</div>
         </div>
       </div>
+      <div class="mini-activity-section">
+        <div class="mini-activity-head">30 derniers jours</div>
+        <div class="mini-activity-board" id="mini-activity-board"></div>
+      </div>
     </section>
 
     <section class="card">
@@ -271,7 +275,6 @@
         <div class="activity-scroll">
           <div class="activity-board" id="activity-board"></div>
         </div>
-        <div class="activity-tooltip hidden" id="activity-tooltip"></div>
         <div class="activity-legend">
           <span class="legend-label">Moins</span>
           <div class="activity-cell"></div>
@@ -290,6 +293,8 @@
       </section>
     </div>
   </main>
+
+  <div class="activity-tooltip hidden" id="activity-tooltip"></div>
 
   <script type="module" src="script.js"></script>
   <script>

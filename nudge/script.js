@@ -441,16 +441,14 @@ function renderActivityHeatmap(archived) {
     range.textContent = `${fmt(start)} → ${fmt(today)}`;
   }
 
-  bindActivityTooltip();
+  bindHeatmapTooltip(board);
 }
 
-let activityTooltipBound = false;
-function bindActivityTooltip() {
-  if (activityTooltipBound) return;
-  const board = document.getElementById("activity-board");
+function bindHeatmapTooltip(boardEl) {
+  if (!boardEl || boardEl.dataset.tooltipBound === "1") return;
   const tooltip = document.getElementById("activity-tooltip");
-  if (!board || !tooltip) return;
-  board.addEventListener("mousemove", (e) => {
+  if (!tooltip) return;
+  boardEl.addEventListener("mousemove", (e) => {
     const cell = e.target.closest(".activity-cell");
     if (!cell || !cell.dataset.tooltip) {
       tooltip.classList.add("hidden");
@@ -462,10 +460,10 @@ function bindActivityTooltip() {
     tooltip.style.left = `${rect.left + rect.width / 2}px`;
     tooltip.style.top = `${rect.top}px`;
   });
-  board.addEventListener("mouseleave", () => {
+  boardEl.addEventListener("mouseleave", () => {
     tooltip.classList.add("hidden");
   });
-  activityTooltipBound = true;
+  boardEl.dataset.tooltipBound = "1";
 }
 
 function formatCompletedAt(iso) {
@@ -675,6 +673,58 @@ async function loadTodayStats() {
   todayCompletedCount = dates.filter((d) => dateKey(d) === todayKey).length;
   streakDays = computeStreak(dates);
   renderProgressBar();
+  renderMiniHeatmap(dates);
+}
+
+function renderMiniHeatmap(dates) {
+  const board = document.getElementById("mini-activity-board");
+  if (!board) return;
+
+  const counts = new Map();
+  dates.forEach((d) => {
+    const k = dateKey(d);
+    counts.set(k, (counts.get(k) || 0) + 1);
+  });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const start = new Date(today);
+  start.setDate(start.getDate() - 28);
+  while (start.getDay() !== 1) {
+    start.setDate(start.getDate() - 1);
+  }
+
+  const totalDays = Math.floor((today - start) / 86400000) + 1;
+  const totalWeeks = Math.ceil(totalDays / 7);
+
+  board.innerHTML = "";
+  board.style.gridTemplateColumns = `repeat(${totalWeeks}, 12px)`;
+
+  const cursor = new Date(start);
+  while (cursor <= today) {
+    const dayOffset = Math.floor((cursor - start) / 86400000);
+    const week = Math.floor(dayOffset / 7);
+    const dayInWeek = dayOffset % 7;
+
+    const k = dateKey(cursor);
+    const count = counts.get(k) || 0;
+    const cell = document.createElement("div");
+    cell.className = "activity-cell";
+    if (count >= 4) cell.classList.add("lvl-4");
+    else if (count >= 3) cell.classList.add("lvl-3");
+    else if (count >= 2) cell.classList.add("lvl-2");
+    else if (count >= 1) cell.classList.add("lvl-1");
+    cell.style.gridColumn = String(week + 1);
+    cell.style.gridRow = String(dayInWeek + 1);
+    const dateLabel = cursor.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+    cell.dataset.tooltip = count === 0 ? `Aucune tâche · ${dateLabel}` : `${count} tâche${count > 1 ? "s" : ""} · ${dateLabel}`;
+    board.appendChild(cell);
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  bindHeatmapTooltip(board);
 }
 
 function renderProgressBar() {
