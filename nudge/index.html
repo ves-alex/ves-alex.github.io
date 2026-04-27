@@ -195,6 +195,19 @@
       </section>
 
       <section class="card">
+        <h2>Objectif quotidien</h2>
+        <p class="card-help">Combien de tâches tu vises chaque jour. La barre de progression de l'écran principal se remplit selon cet objectif.</p>
+        <form id="goal-form" class="form">
+          <label>
+            Tâches par jour
+            <input type="number" id="daily-goal" min="1" max="20" value="3" required />
+          </label>
+          <div id="goal-status" class="form-status"></div>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+      </section>
+
+      <section class="card">
         <h2>Compte</h2>
 
         <form id="password-form" class="form settings-form">

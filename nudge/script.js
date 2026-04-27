@@ -15,6 +15,8 @@ const THEME_META_COLORS = {
   sand: "#f5f1ea",
 };
 const ENERGY_FLOOR = 5;
+const DAILY_GOAL_KEY = "nudge.dailyGoal";
+const DEFAULT_DAILY_GOAL = 3;
 
 applyTheme(loadTheme());
 
@@ -104,6 +106,38 @@ let currentUser = null;
 let isInRecoveryFlow = false;
 let todayCompletedCount = 0;
 let streakDays = 0;
+let dailyGoal = loadDailyGoal();
+
+function loadDailyGoal() {
+  const saved = parseInt(localStorage.getItem(DAILY_GOAL_KEY), 10);
+  if (Number.isFinite(saved) && saved >= 1 && saved <= 20) return saved;
+  return DEFAULT_DAILY_GOAL;
+}
+
+function saveDailyGoal(n) {
+  localStorage.setItem(DAILY_GOAL_KEY, String(n));
+}
+
+const goalForm = document.getElementById("goal-form");
+const goalInput = document.getElementById("daily-goal");
+const goalStatus = document.getElementById("goal-status");
+
+goalForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  goalStatus.className = "form-status";
+  goalStatus.textContent = "";
+  const n = parseInt(goalInput.value, 10);
+  if (!Number.isFinite(n) || n < 1 || n > 20) {
+    goalStatus.classList.add("error");
+    goalStatus.textContent = "Choisis un nombre entre 1 et 20.";
+    return;
+  }
+  dailyGoal = n;
+  saveDailyGoal(n);
+  goalStatus.classList.add("success");
+  goalStatus.textContent = "Objectif mis à jour.";
+  renderProgressBar();
+});
 
 authForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -197,6 +231,9 @@ settingsBtn.addEventListener("click", () => {
   passwordStatus.className = "form-status";
   emailStatus.textContent = "";
   emailStatus.className = "form-status";
+  goalStatus.textContent = "";
+  goalStatus.className = "form-status";
+  goalInput.value = dailyGoal;
   passwordForm.reset();
   emailForm.reset();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -518,13 +555,12 @@ async function loadTodayStats() {
 }
 
 function renderProgressBar() {
-  const total = todayCompletedCount + tasks.length;
-  const ratio = total > 0 ? todayCompletedCount / total : 0;
+  const ratio = dailyGoal > 0 ? Math.min(todayCompletedCount / dailyGoal, 1) : 0;
   const todayCountEl = document.getElementById("today-count");
   const todayFillEl = document.getElementById("today-fill");
   const streakValueEl = document.getElementById("streak-value");
   const streakLabelEl = document.getElementById("streak-label");
-  if (todayCountEl) todayCountEl.textContent = `${todayCompletedCount} / ${total}`;
+  if (todayCountEl) todayCountEl.textContent = `${todayCompletedCount} / ${dailyGoal}`;
   if (todayFillEl) todayFillEl.style.width = `${Math.round(ratio * 100)}%`;
   if (streakValueEl) streakValueEl.textContent = streakDays;
   if (streakLabelEl) streakLabelEl.textContent = streakDays === 1 ? "jour d'affilée" : "jours d'affilée";
