@@ -46,7 +46,7 @@ const forgotForm = document.getElementById("forgot-form");
 const forgotEmail = document.getElementById("forgot-email");
 const forgotStatus = document.getElementById("forgot-status");
 const forgotBack = document.getElementById("forgot-back");
-const resetForm = document.getElementById("reset-form");
+const pwResetForm = document.getElementById("reset-form");
 const resetPassword = document.getElementById("reset-password");
 const resetPasswordConfirm = document.getElementById("reset-password-confirm");
 const resetStatus = document.getElementById("reset-status");
@@ -117,7 +117,7 @@ forgotForm.addEventListener("submit", async (e) => {
   forgotForm.reset();
 });
 
-resetForm.addEventListener("submit", async (e) => {
+pwResetForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   resetStatus.className = "form-status";
   resetStatus.textContent = "";
@@ -141,7 +141,7 @@ resetForm.addEventListener("submit", async (e) => {
   }
   resetStatus.classList.add("success");
   resetStatus.textContent = "Mot de passe mis à jour. Connexion en cours…";
-  resetForm.reset();
+  pwResetForm.reset();
 });
 
 function switchAuthMode(mode) {
