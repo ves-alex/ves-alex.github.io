@@ -328,7 +328,7 @@ html, body {
 
 /* Flatpickr — picker heure (wheel-scrollable) */
 .flatpickr-calendar.hasTime.noCalendar {
-  width: 200px !important;
+  width: 140px !important;
   height: auto !important;
   overflow: visible !important;
 }
@@ -339,7 +339,7 @@ html, body {
   height: auto !important;
   max-height: none !important;
   line-height: normal !important;
-  padding: 12px 8px !important;
+  padding: 6px 6px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -348,18 +348,18 @@ html, body {
 
 .flatpickr-time .numInputWrapper {
   flex: 1;
-  height: 64px !important;
+  height: 40px !important;
   position: relative;
 }
 
 .flatpickr-time input {
   background: transparent !important;
   color: var(--text) !important;
-  font-size: 1.6rem !important;
+  font-size: 1.1rem !important;
   font-weight: 500;
   font-family: inherit !important;
-  height: 64px !important;
-  line-height: 64px !important;
+  height: 40px !important;
+  line-height: 40px !important;
   cursor: ns-resize;
   caret-color: transparent;
 }
@@ -368,14 +368,14 @@ html, body {
 .flatpickr-time input:focus {
   background: var(--surface-2) !important;
   color: var(--accent) !important;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .flatpickr-time .flatpickr-time-separator {
   color: var(--muted) !important;
-  font-size: 1.4rem !important;
-  height: 64px !important;
-  line-height: 64px !important;
+  font-size: 1rem !important;
+  height: 40px !important;
+  line-height: 40px !important;
 }
 
 .flatpickr-time .numInputWrapper span.arrowUp,
