@@ -2,7 +2,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = "https://dhmthosilfhudzygmsst.supabase.co";
 const SUPABASE_KEY = "sb_publishable_kd3N68yGfmPOlK75bkTAHA_QZ9sNK1_";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    lock: async (_name, _timeout, fn) => fn(),
+  },
+});
 
 const LOCAL_STORAGE_KEY = "next-move.tasks";
 const THEME_STORAGE_KEY = "nudge.theme";
