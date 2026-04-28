@@ -126,7 +126,6 @@ const goalInput = document.getElementById("daily-goal");
 const goalStatus = document.getElementById("goal-status");
 const reminderForm = document.getElementById("reminder-form");
 const reminderEnabled = document.getElementById("reminder-enabled");
-const reminderTimeInput = document.getElementById("reminder-time");
 const reminderStatus = document.getElementById("reminder-status");
 
 goalForm.addEventListener("submit", (e) => {
@@ -161,12 +160,11 @@ async function loadReminderSettings() {
   reminderStatus.textContent = "";
   if (!currentUser) {
     reminderEnabled.checked = false;
-    reminderTimeInput.value = "09:00";
     return;
   }
   const { data, error } = await supabase
     .from("push_subscriptions")
-    .select("reminder_time, enabled")
+    .select("enabled")
     .eq("user_id", currentUser.id)
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -175,16 +173,10 @@ async function loadReminderSettings() {
     console.error("loadReminderSettings", error);
     return;
   }
-  if (data) {
-    reminderEnabled.checked = !!data.enabled;
-    reminderTimeInput.value = data.reminder_time || "09:00";
-  } else {
-    reminderEnabled.checked = false;
-    reminderTimeInput.value = "09:00";
-  }
+  reminderEnabled.checked = !!(data && data.enabled);
 }
 
-async function subscribeAndSave(time) {
+async function subscribeAndSave() {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
     throw new Error("Ton navigateur ne supporte pas les notifications push.");
   }
@@ -209,7 +201,6 @@ async function subscribeAndSave(time) {
       endpoint: json.endpoint,
       p256dh: json.keys.p256dh,
       auth: json.keys.auth,
-      reminder_time: time,
       timezone: tz,
       enabled: true,
       updated_at: new Date().toISOString(),
@@ -239,17 +230,11 @@ reminderForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   reminderStatus.className = "form-status";
   reminderStatus.textContent = "";
-  const time = reminderTimeInput.value || "09:00";
-  if (!/^\d{2}:\d{2}$/.test(time)) {
-    reminderStatus.classList.add("error");
-    reminderStatus.textContent = "Heure invalide.";
-    return;
-  }
   try {
     if (reminderEnabled.checked) {
-      await subscribeAndSave(time);
+      await subscribeAndSave();
       reminderStatus.classList.add("success");
-      reminderStatus.textContent = `Rappels activés à ${time}.`;
+      reminderStatus.textContent = "Rappels activés sur cet appareil.";
     } else {
       await disableRemindersForUser();
       reminderStatus.classList.add("success");
