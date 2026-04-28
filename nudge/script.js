@@ -706,22 +706,18 @@ async function signUp() {
   }
 }
 
-async function validateSessionOrClear() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) return;
-  try {
-    const verify = supabase.auth.getUser();
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("session-verify-timeout")), 6000));
-    const { error } = await Promise.race([verify, timeout]);
-    if (error) throw error;
-  } catch (e) {
-    console.warn("Session invalide ou bloquée, nettoyage:", e);
-    Object.keys(localStorage).filter((k) => k.startsWith("sb-")).forEach((k) => localStorage.removeItem(k));
-    window.location.reload();
-  }
+function clearSessionAndReload(reason) {
+  console.warn("Session corrompue, nettoyage:", reason);
+  Object.keys(localStorage).filter((k) => k.startsWith("sb-")).forEach((k) => localStorage.removeItem(k));
+  window.location.reload();
 }
 
-validateSessionOrClear();
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label}-timeout`)), ms)),
+  ]);
+}
 
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === "PASSWORD_RECOVERY") {
@@ -772,11 +768,19 @@ function showAuth() {
 
 async function loadUserSettings() {
   if (!currentUser) return;
-  const { data, error } = await supabase
-    .from("user_settings")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .maybeSingle();
+  let data, error;
+  try {
+    const result = await withTimeout(
+      supabase.from("user_settings").select("*").eq("user_id", currentUser.id).maybeSingle(),
+      6000,
+      "loadUserSettings",
+    );
+    data = result.data;
+    error = result.error;
+  } catch (e) {
+    clearSessionAndReload(e.message);
+    return;
+  }
   if (error) {
     console.error("loadUserSettings", error);
     return;
@@ -809,11 +813,19 @@ async function saveUserSettings(updates) {
 }
 
 async function loadTasks() {
-  const { data, error } = await supabase
-    .from("tasks")
-    .select("*")
-    .is("completed_at", null)
-    .order("created_at", { ascending: true });
+  let data, error;
+  try {
+    const result = await withTimeout(
+      supabase.from("tasks").select("*").is("completed_at", null).order("created_at", { ascending: true }),
+      6000,
+      "loadTasks",
+    );
+    data = result.data;
+    error = result.error;
+  } catch (e) {
+    clearSessionAndReload(e.message);
+    return;
+  }
   if (error) {
     console.error("loadTasks", error);
     return;
