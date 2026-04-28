@@ -168,10 +168,16 @@
           </label>
         </div>
 
-        <label>
-          Date d'échéance <span class="label-hint">(optionnel)</span>
-          <input type="date" id="due-date" />
-        </label>
+        <div class="row row-due">
+          <label>
+            Date d'échéance <span class="label-hint">(optionnel)</span>
+            <input type="date" id="due-date" />
+          </label>
+          <label>
+            Heure du rappel <span class="label-hint">(optionnel)</span>
+            <input type="time" id="due-time" />
+          </label>
+        </div>
 
         <div class="form-actions">
           <button type="submit" id="submit-btn" class="btn btn-primary">Ajouter</button>

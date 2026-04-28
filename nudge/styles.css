@@ -332,6 +332,10 @@ html, body {
   gap: 12px;
 }
 
+.row-due {
+  grid-template-columns: 1fr 1fr;
+}
+
 .btn {
   border: none;
   border-radius: 8px;

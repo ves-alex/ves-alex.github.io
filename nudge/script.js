@@ -62,6 +62,7 @@ const importanceInput = document.getElementById("importance");
 const urgencyInput = document.getElementById("urgency");
 const energyInput = document.getElementById("energy");
 const dueDateInput = document.getElementById("due-date");
+const dueTimeInput = document.getElementById("due-time");
 
 const dueDatePicker = window.flatpickr ? window.flatpickr(dueDateInput, {
   locale: window.flatpickr.l10ns?.fr || "default",
@@ -957,12 +958,22 @@ form.addEventListener("submit", async (e) => {
   const name = nameInput.value.trim();
   if (!name || !currentUser) return;
 
+  const dueDateValue = dueDateInput.value || null;
+  const dueTimeValue = dueTimeInput.value || null;
+  let dueAtValue = null;
+  if (dueDateValue && dueTimeValue) {
+    const local = new Date(`${dueDateValue}T${dueTimeValue}`);
+    if (!Number.isNaN(local.getTime())) dueAtValue = local.toISOString();
+  }
+
   const data = {
     name,
     importance: Number(importanceInput.value),
     urgency: Number(urgencyInput.value),
     energy: Number(energyInput.value),
-    due_date: dueDateInput.value || null,
+    due_date: dueDateValue,
+    due_at: dueAtValue,
+    reminded_at: null,
   };
 
   if (editingId) {
@@ -1014,6 +1025,18 @@ function startEdit(id) {
   } else {
     dueDateInput.value = task.due_date || "";
   }
+  if (task.due_at) {
+    const d = new Date(task.due_at);
+    if (!Number.isNaN(d.getTime())) {
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      dueTimeInput.value = `${hh}:${mm}`;
+    } else {
+      dueTimeInput.value = "";
+    }
+  } else {
+    dueTimeInput.value = "";
+  }
   formTitle.textContent = "Modifier la tâche";
   submitBtn.textContent = "Enregistrer";
   cancelBtn.classList.remove("hidden");
@@ -1040,6 +1063,7 @@ function resetForm() {
   } else {
     dueDateInput.value = "";
   }
+  dueTimeInput.value = "";
 }
 
 suggestBtn.addEventListener("click", () => {
@@ -1114,6 +1138,15 @@ function formatScore(n) {
   return Number.isInteger(n) ? n.toString() : n.toFixed(2);
 }
 
+function formatDueTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
 function render() {
   renderProgressBar();
   list.innerHTML = "";
@@ -1129,7 +1162,7 @@ function render() {
     li.className = "task-item"
       + (task.id === editingId ? " editing" : "")
       + (idx === 0 && sorted.length > 1 ? " top-pick" : "");
-    const dueLabel = task.due_date ? `<span class="due-pill ${urgencyFromDueDate(task.due_date) >= 9 ? "due-urgent" : ""}">⏱ ${formatDueDate(task.due_date)}</span>` : "";
+    const dueLabel = task.due_date ? `<span class="due-pill ${urgencyFromDueDate(task.due_date) >= 9 ? "due-urgent" : ""}">⏱ ${formatDueDate(task.due_date)}${task.due_at ? ` ${formatDueTime(task.due_at)}` : ""}</span>` : "";
     li.innerHTML = `
       <div>
         <div class="name">${escapeHtml(task.name)} ${dueLabel}</div>
