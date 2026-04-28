@@ -706,6 +706,23 @@ async function signUp() {
   }
 }
 
+async function validateSessionOrClear() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+  try {
+    const verify = supabase.auth.getUser();
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("session-verify-timeout")), 6000));
+    const { error } = await Promise.race([verify, timeout]);
+    if (error) throw error;
+  } catch (e) {
+    console.warn("Session invalide ou bloquée, nettoyage:", e);
+    Object.keys(localStorage).filter((k) => k.startsWith("sb-")).forEach((k) => localStorage.removeItem(k));
+    window.location.reload();
+  }
+}
+
+validateSessionOrClear();
+
 supabase.auth.onAuthStateChange(async (event, session) => {
   if (event === "PASSWORD_RECOVERY") {
     isInRecoveryFlow = true;
