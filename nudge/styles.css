@@ -102,6 +102,22 @@ html, body {
   color: var(--accent);
 }
 
+.header .brand {
+  cursor: pointer;
+  transition: opacity 0.15s;
+  border-radius: 4px;
+  outline: none;
+}
+
+.header .brand:hover {
+  opacity: 0.75;
+}
+
+.header .brand:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
 .brand-mark {
   display: block;
   width: auto;

@@ -88,6 +88,7 @@ const statToday = document.getElementById("stat-today");
 const statWeek = document.getElementById("stat-week");
 const statMonth = document.getElementById("stat-month");
 const statTotal = document.getElementById("stat-total");
+const brandHome = document.getElementById("brand-home");
 const tasksView = document.getElementById("tasks-view");
 const settingsView = document.getElementById("settings-view");
 const archivesView = document.getElementById("archives-view");
@@ -255,6 +256,21 @@ archivesBtn.addEventListener("click", async () => {
 archivesBack.addEventListener("click", () => {
   archivesView.classList.add("hidden");
   tasksView.classList.remove("hidden");
+});
+
+function goHome() {
+  settingsView.classList.add("hidden");
+  archivesView.classList.add("hidden");
+  tasksView.classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+brandHome.addEventListener("click", goHome);
+brandHome.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    goHome();
+  }
 });
 
 async function loadArchives() {
