@@ -348,6 +348,15 @@
           console.warn("Service worker non enregistré :", err);
         });
       });
+
+      let reloadingForNewSW = false;
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloadingForNewSW) return;
+          reloadingForNewSW = true;
+          window.location.reload();
+        });
+      }
     }
   </script>
 </body>
