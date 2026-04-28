@@ -135,6 +135,7 @@ goalForm.addEventListener("submit", (e) => {
   }
   dailyGoal = n;
   saveDailyGoal(n);
+  saveUserSettings({ daily_goal: n });
   goalStatus.classList.add("success");
   goalStatus.textContent = "Objectif mis à jour.";
   renderProgressBar();
@@ -503,6 +504,7 @@ themeGrid.addEventListener("click", (e) => {
   if (!VALID_THEMES.includes(theme)) return;
   applyTheme(theme);
   refreshThemeSelection();
+  saveUserSettings({ theme });
 });
 
 function refreshThemeSelection() {
@@ -603,6 +605,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   currentUser = session?.user ?? null;
   if (currentUser) {
     showApp();
+    await loadUserSettings();
     await loadTasks();
   } else {
     showAuth();
@@ -629,6 +632,44 @@ function showAuth() {
   authScreen.classList.remove("hidden");
   appScreen.classList.add("hidden");
   authError.textContent = "";
+}
+
+async function loadUserSettings() {
+  if (!currentUser) return;
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .maybeSingle();
+  if (error) {
+    console.error("loadUserSettings", error);
+    return;
+  }
+  if (data) {
+    if (VALID_THEMES.includes(data.theme)) {
+      applyTheme(data.theme);
+    }
+    if (Number.isFinite(data.daily_goal) && data.daily_goal >= 1 && data.daily_goal <= 20) {
+      dailyGoal = data.daily_goal;
+      saveDailyGoal(dailyGoal);
+    }
+    renderProgressBar();
+  } else {
+    const currentTheme = document.documentElement.getAttribute("data-theme") || "graphite";
+    await saveUserSettings({ theme: currentTheme, daily_goal: dailyGoal });
+  }
+}
+
+async function saveUserSettings(updates) {
+  if (!currentUser) return;
+  const { error } = await supabase
+    .from("user_settings")
+    .upsert({
+      user_id: currentUser.id,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+  if (error) console.error("saveUserSettings", error);
 }
 
 async function loadTasks() {
