@@ -305,6 +305,27 @@ html, body {
   border-color: var(--accent);
 }
 
+.form label.reminder-toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.form label.reminder-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.form input[type="time"] {
+  font-family: inherit;
+  color-scheme: dark;
+}
+
 .row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

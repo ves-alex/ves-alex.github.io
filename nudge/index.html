@@ -237,6 +237,23 @@
       </section>
 
       <section class="card">
+        <h2>Rappels</h2>
+        <p class="card-help">Reçois une notification chaque jour pour te rappeler ta prochaine action. Sur iPhone, ajoute Nudge à l'écran d'accueil avant d'activer (les push n'arrivent qu'en mode application installée).</p>
+        <form id="reminder-form" class="form">
+          <label class="reminder-toggle">
+            <input type="checkbox" id="reminder-enabled" />
+            <span>Activer les rappels quotidiens</span>
+          </label>
+          <label>
+            Heure du rappel
+            <input type="time" id="reminder-time" value="09:00" />
+          </label>
+          <div id="reminder-status" class="form-status"></div>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </form>
+      </section>
+
+      <section class="card">
         <h2>Compte</h2>
 
         <form id="password-form" class="form settings-form">

@@ -17,6 +17,7 @@ const THEME_META_COLORS = {
 const ENERGY_FLOOR = 5;
 const DAILY_GOAL_KEY = "nudge.dailyGoal";
 const DEFAULT_DAILY_GOAL = 3;
+const VAPID_PUBLIC = "BFgvuQEgr1UMi_-3U3N5-BHjN_UIcjoJt5Oa6appFkUUoJ4xZYG19ziP-t17kBlxyBMJymq63Lb_WM5XUZBTg0g";
 
 applyTheme(loadTheme());
 
@@ -122,6 +123,10 @@ function saveDailyGoal(n) {
 const goalForm = document.getElementById("goal-form");
 const goalInput = document.getElementById("daily-goal");
 const goalStatus = document.getElementById("goal-status");
+const reminderForm = document.getElementById("reminder-form");
+const reminderEnabled = document.getElementById("reminder-enabled");
+const reminderTimeInput = document.getElementById("reminder-time");
+const reminderStatus = document.getElementById("reminder-status");
 
 goalForm.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -139,6 +144,120 @@ goalForm.addEventListener("submit", (e) => {
   goalStatus.classList.add("success");
   goalStatus.textContent = "Objectif mis à jour.";
   renderProgressBar();
+});
+
+function urlBase64ToUint8Array(base64) {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(b64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+async function loadReminderSettings() {
+  reminderStatus.className = "form-status";
+  reminderStatus.textContent = "";
+  if (!currentUser) {
+    reminderEnabled.checked = false;
+    reminderTimeInput.value = "09:00";
+    return;
+  }
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("reminder_time, enabled")
+    .eq("user_id", currentUser.id)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.error("loadReminderSettings", error);
+    return;
+  }
+  if (data) {
+    reminderEnabled.checked = !!data.enabled;
+    reminderTimeInput.value = data.reminder_time || "09:00";
+  } else {
+    reminderEnabled.checked = false;
+    reminderTimeInput.value = "09:00";
+  }
+}
+
+async function subscribeAndSave(time) {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    throw new Error("Ton navigateur ne supporte pas les notifications push.");
+  }
+  const reg = await navigator.serviceWorker.ready;
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") {
+    throw new Error("Permission refusée. Autorise les notifications dans ton navigateur.");
+  }
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC),
+    });
+  }
+  const json = sub.toJSON();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .upsert({
+      user_id: currentUser.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth,
+      reminder_time: time,
+      timezone: tz,
+      enabled: true,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,endpoint" });
+  if (error) throw new Error(error.message);
+}
+
+async function disableRemindersForUser() {
+  if (!currentUser) return;
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  if (sub) {
+    await supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("user_id", currentUser.id)
+      .eq("endpoint", sub.endpoint);
+    try { await sub.unsubscribe(); } catch (_) {}
+  }
+  await supabase
+    .from("push_subscriptions")
+    .update({ enabled: false, updated_at: new Date().toISOString() })
+    .eq("user_id", currentUser.id);
+}
+
+reminderForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  reminderStatus.className = "form-status";
+  reminderStatus.textContent = "";
+  const time = reminderTimeInput.value || "09:00";
+  if (!/^\d{2}:\d{2}$/.test(time)) {
+    reminderStatus.classList.add("error");
+    reminderStatus.textContent = "Heure invalide.";
+    return;
+  }
+  try {
+    if (reminderEnabled.checked) {
+      await subscribeAndSave(time);
+      reminderStatus.classList.add("success");
+      reminderStatus.textContent = `Rappels activés à ${time}.`;
+    } else {
+      await disableRemindersForUser();
+      reminderStatus.classList.add("success");
+      reminderStatus.textContent = "Rappels désactivés.";
+    }
+  } catch (err) {
+    reminderStatus.classList.add("error");
+    reminderStatus.textContent = err.message || "Erreur.";
+  }
 });
 
 authForm.addEventListener("submit", async (e) => {
@@ -238,6 +357,7 @@ settingsBtn.addEventListener("click", () => {
   goalInput.value = dailyGoal;
   passwordForm.reset();
   emailForm.reset();
+  loadReminderSettings();
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
