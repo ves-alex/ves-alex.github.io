@@ -72,6 +72,15 @@ const dueDatePicker = window.flatpickr ? window.flatpickr(dueDateInput, {
   allowInput: false,
   disableMobile: true,
 }) : null;
+const dueTimePicker = window.flatpickr ? window.flatpickr(dueTimeInput, {
+  enableTime: true,
+  noCalendar: true,
+  dateFormat: "H:i",
+  time_24hr: true,
+  minuteIncrement: 1,
+  allowInput: false,
+  disableMobile: true,
+}) : null;
 const list = document.getElementById("task-list");
 const empty = document.getElementById("empty");
 const suggestBtn = document.getElementById("suggest-btn");
@@ -1015,12 +1024,16 @@ function startEdit(id) {
     if (!Number.isNaN(d.getTime())) {
       const hh = String(d.getHours()).padStart(2, "0");
       const mm = String(d.getMinutes()).padStart(2, "0");
-      dueTimeInput.value = `${hh}:${mm}`;
+      const value = `${hh}:${mm}`;
+      if (dueTimePicker) dueTimePicker.setDate(value, false);
+      else dueTimeInput.value = value;
     } else {
-      dueTimeInput.value = "";
+      if (dueTimePicker) dueTimePicker.clear();
+      else dueTimeInput.value = "";
     }
   } else {
-    dueTimeInput.value = "";
+    if (dueTimePicker) dueTimePicker.clear();
+    else dueTimeInput.value = "";
   }
   formTitle.textContent = "Modifier la tâche";
   submitBtn.textContent = "Enregistrer";
@@ -1048,7 +1061,11 @@ function resetForm() {
   } else {
     dueDateInput.value = "";
   }
-  dueTimeInput.value = "";
+  if (dueTimePicker) {
+    dueTimePicker.clear();
+  } else {
+    dueTimeInput.value = "";
+  }
 }
 
 suggestBtn.addEventListener("click", () => {
