@@ -699,7 +699,7 @@ function renderMiniHeatmap(dates) {
   const totalWeeks = Math.ceil(totalDays / 7);
 
   board.innerHTML = "";
-  board.style.gridTemplateColumns = `repeat(${totalWeeks}, 12px)`;
+  board.style.gridTemplateColumns = `repeat(${totalWeeks}, 10px)`;
 
   const cursor = new Date(start);
   while (cursor <= today) {
