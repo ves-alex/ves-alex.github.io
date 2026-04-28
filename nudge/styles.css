@@ -95,6 +95,26 @@ html, body {
   letter-spacing: -0.02em;
 }
 
+.brand {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+}
+
+.brand-mark {
+  display: block;
+  width: auto;
+}
+
+.header .brand-mark {
+  height: 36px;
+}
+
+.auth-card .brand-mark {
+  height: 32px;
+}
+
 .subtitle {
   margin: 6px 0 0;
   color: var(--muted);
