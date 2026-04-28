@@ -328,14 +328,22 @@ html, body {
 
 /* Flatpickr — picker heure (wheel-scrollable) */
 .flatpickr-calendar.hasTime.noCalendar {
-  width: 180px !important;
+  width: 200px !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 .flatpickr-time {
   background: var(--surface) !important;
   border-radius: 12px !important;
   height: auto !important;
-  padding: 8px 0 !important;
+  max-height: none !important;
+  line-height: normal !important;
+  padding: 12px 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: visible !important;
 }
 
 .flatpickr-time .numInputWrapper {
