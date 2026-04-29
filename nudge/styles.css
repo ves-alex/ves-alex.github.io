@@ -26,12 +26,12 @@
 }
 
 :root[data-theme="forest"] {
-  --bg: #121a14;
-  --surface: #18241b;
-  --surface-2: #1f2e23;
-  --border: #2a3d2f;
-  --text: #dde5df;
-  --muted: #84968a;
+  --bg: #0e1610;
+  --surface: #1a261d;
+  --surface-2: #233329;
+  --border: #344b3a;
+  --text: #e2eae4;
+  --muted: #95a89c;
   --accent: #6ec27a;
   --accent-strong: #5aa666;
   --accent-contrast: #0a130c;
@@ -40,15 +40,15 @@
 
 :root[data-theme="onyx"] {
   --bg: #000000;
-  --surface: #0a0a0a;
-  --surface-2: #141414;
-  --border: #1f1f1f;
-  --text: #f0f0f0;
-  --muted: #888888;
-  --accent: #ffffff;
-  --accent-strong: #d0d0d0;
+  --surface: #161616;
+  --surface-2: #222222;
+  --border: #333333;
+  --text: #f5f5f5;
+  --muted: #a8a8a8;
+  --accent: #f0f0f0;
+  --accent-strong: #ffffff;
   --accent-contrast: #000000;
-  --danger: #ff7a7a;
+  --danger: #ff8a8a;
 }
 
 :root[data-theme="sand"] {
