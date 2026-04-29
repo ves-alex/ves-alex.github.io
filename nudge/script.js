@@ -1136,18 +1136,22 @@ suggestBtn.addEventListener("click", () => {
 
 function score(task) {
   const base = (task.importance + effectiveUrgency(task)) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
-  return base + deadlineBonus(task.due_date);
+  return base + deadlineBonus(task.due_date, task.due_at);
 }
 
 function formatScoreBreakdown(task) {
   const u = effectiveUrgency(task);
   const base = (task.importance + u) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
-  const bonus = deadlineBonus(task.due_date);
+  const bonus = deadlineBonus(task.due_date, task.due_at);
   const urgencySource = task.due_date ? `urgence ${u} (date)` : `urgence ${u}`;
   const baseStr = `(importance ${task.importance} + ${urgencySource}) ÷ (${ENERGY_BIAS} + ${ENERGY_SLOPE} × énergie ${task.energy}) = ${formatScore(base)}`;
   if (bonus === 0) return `Score : ${formatScore(base)} (${baseStr})`;
-  const bonusLabel = bonus >= 10 ? "en retard" : "aujourd'hui";
-  return `Score : ${formatScore(base + bonus)} (${baseStr} + ${bonus} ${bonusLabel})`;
+  const days = daysUntilDue(task.due_date);
+  let bonusLabel;
+  if (days < 0) bonusLabel = "en retard";
+  else if (task.due_at) bonusLabel = `aujourd'hui à ${formatDueTime(task.due_at)}`;
+  else bonusLabel = "aujourd'hui";
+  return `Score : ${formatScore(base + bonus)} (${baseStr} + ${formatScore(bonus)} ${bonusLabel})`;
 }
 
 function effectiveUrgency(task) {
@@ -1172,12 +1176,17 @@ function urgencyFromDueDate(dueDate) {
   return 1;
 }
 
-function deadlineBonus(dueDate) {
+function deadlineBonus(dueDate, dueAt) {
   const days = daysUntilDue(dueDate);
   if (days === null) return 0;
   if (days < 0) return 10;
-  if (days === 0) return 3;
-  return 0;
+  if (days !== 0) return 0;
+  let bonus = 3;
+  if (dueAt) {
+    const hoursUntil = (new Date(dueAt) - new Date()) / 3600000;
+    bonus += Math.max(0, Math.min(6, 6 - hoursUntil));
+  }
+  return bonus;
 }
 
 function formatDueDate(dueDate) {
