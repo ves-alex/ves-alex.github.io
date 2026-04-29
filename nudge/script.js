@@ -18,7 +18,8 @@ const THEME_META_COLORS = {
   onyx: "#000000",
   sand: "#f5f1ea",
 };
-const ENERGY_FLOOR = 5;
+const ENERGY_BIAS = 2;
+const ENERGY_SLOPE = 0.2;
 const DAILY_GOAL_KEY = "nudge.dailyGoal";
 const DEFAULT_DAILY_GOAL = 3;
 const VAPID_PUBLIC = "BFgvuQEgr1UMi_-3U3N5-BHjN_UIcjoJt5Oa6appFkUUoJ4xZYG19ziP-t17kBlxyBMJymq63Lb_WM5XUZBTg0g";
@@ -1128,13 +1129,13 @@ suggestBtn.addEventListener("click", () => {
   suggestion.innerHTML = `
     <h3>Prochaine action</h3>
     <div class="pick">${escapeHtml(best.name)}</div>
-    <div class="score">Score : ${formatScore(score(best))} ((importance ${best.importance} + urgence ${best.urgency}) ÷ ${Math.max(best.energy, ENERGY_FLOOR)}${best.energy < ENERGY_FLOOR ? ` — énergie ${best.energy} relevée au plancher ${ENERGY_FLOOR}` : ""})</div>
+    <div class="score">Score : ${formatScore(score(best))} ((importance ${best.importance} + urgence ${best.urgency}) ÷ (${ENERGY_BIAS} + ${ENERGY_SLOPE} × énergie ${best.energy}))</div>
     ${nextHtml}
   `;
 });
 
 function score(task) {
-  return (task.importance + effectiveUrgency(task)) / Math.max(task.energy, ENERGY_FLOOR);
+  return (task.importance + effectiveUrgency(task)) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
 }
 
 function effectiveUrgency(task) {
