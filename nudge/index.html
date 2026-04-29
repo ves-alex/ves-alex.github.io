@@ -343,19 +343,11 @@
   <script type="module" src="script.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch((err) => {
-          console.warn("Service worker non enregistré :", err);
-        });
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((reg) => reg.unregister());
       });
-
-      let reloadingForNewSW = false;
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.addEventListener("controllerchange", () => {
-          if (reloadingForNewSW) return;
-          reloadingForNewSW = true;
-          window.location.reload();
-        });
+      if (window.caches && caches.keys) {
+        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
       }
     }
   </script>
