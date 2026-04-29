@@ -1144,17 +1144,28 @@ span.flatpickr-weekday {
   .header-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .subtitle {
+    margin: 4px 0 0;
   }
 
   .user-zone {
     flex-wrap: wrap;
     margin-top: 0;
-    row-gap: 6px;
+    row-gap: 4px;
+    column-gap: 12px;
   }
 
   .user-email {
     flex-basis: 100%;
+    font-size: 0.78rem;
+    margin: 0;
+  }
+
+  .user-zone .btn-icon {
+    padding: 4px 0;
   }
 
   .card {
