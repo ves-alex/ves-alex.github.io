@@ -1186,6 +1186,53 @@ span.flatpickr-weekday {
   min-height: 1.2em;
 }
 
+.score-info {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.score-info > summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.score-info > summary::-webkit-details-marker {
+  display: none;
+}
+
+.score-info > summary::marker {
+  content: "";
+}
+
+.score-info > summary:hover,
+.score-info[open] > summary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.score-breakdown {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .form-status.success {
   color: var(--accent);
 }

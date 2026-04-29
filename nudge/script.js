@@ -1159,15 +1159,18 @@ function formatScoreBreakdown(task) {
   const u = effectiveUrgency(task);
   const base = (task.importance + u) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
   const bonus = deadlineBonus(task.due_date, task.due_at);
+  const total = base + bonus;
   const urgencySource = task.due_date ? `urgence ${u} (date)` : `urgence ${u}`;
-  const baseStr = `(importance ${task.importance} + ${urgencySource}) ÷ (${ENERGY_BIAS} + ${ENERGY_SLOPE} × énergie ${task.energy}) = ${formatScore(base)}`;
-  if (bonus === 0) return `Score : ${formatScore(base)} (${baseStr})`;
-  const days = daysUntilDue(task.due_date);
-  let bonusLabel;
-  if (days < 0) bonusLabel = "en retard";
-  else if (task.due_at) bonusLabel = `aujourd'hui à ${formatDueTime(task.due_at)}`;
-  else bonusLabel = "aujourd'hui";
-  return `Score : ${formatScore(base + bonus)} (${baseStr} + ${formatScore(bonus)} ${bonusLabel})`;
+  let detail = `(importance ${task.importance} + ${urgencySource}) ÷ (${ENERGY_BIAS} + ${ENERGY_SLOPE} × énergie ${task.energy}) = ${formatScore(base)}`;
+  if (bonus !== 0) {
+    const days = daysUntilDue(task.due_date);
+    let bonusLabel;
+    if (days < 0) bonusLabel = "en retard";
+    else if (task.due_at) bonusLabel = `aujourd'hui à ${formatDueTime(task.due_at)}`;
+    else bonusLabel = "aujourd'hui";
+    detail += ` + ${formatScore(bonus)} (${bonusLabel})`;
+  }
+  return `<span class="score-value">Score : ${formatScore(total)}</span><details class="score-info"><summary aria-label="Détails du calcul">i</summary><div class="score-breakdown">${detail}</div></details>`;
 }
 
 function effectiveUrgency(task) {
