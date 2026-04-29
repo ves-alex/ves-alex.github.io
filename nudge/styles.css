@@ -273,7 +273,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   font-family: inherit;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--text);
   cursor: pointer;
@@ -286,18 +286,35 @@ html, body {
   border-radius: 4px;
 }
 
-.form-chevron {
-  font-size: 0.9em;
-  color: var(--muted);
-  transition: transform 0.2s ease;
+.form-plus {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 1.1rem;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 0.2s ease, background 0.15s;
+}
+
+.form-toggle:hover .form-plus {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.task-form-card:not(.collapsed) .form-plus {
+  transform: rotate(45deg);
 }
 
 .task-form-card.collapsed .form-toggle {
   margin-bottom: 0;
 }
 
-.task-form-card.collapsed .form-chevron {
-  transform: rotate(-90deg);
+.task-form-card.collapsed {
+  padding: 14px 18px;
 }
 
 .task-form-card.collapsed .form {
