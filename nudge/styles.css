@@ -1212,6 +1212,10 @@ span.flatpickr-weekday {
   outline: none;
 }
 
+.score {
+  position: relative;
+}
+
 .score-tooltip {
   position: absolute;
   top: 50%;
@@ -1233,6 +1237,21 @@ span.flatpickr-weekday {
   transition: opacity 0.15s;
   z-index: 10;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 600px) {
+  .score-info {
+    position: static;
+  }
+
+  .score-tooltip {
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
 }
 
 
