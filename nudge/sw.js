@@ -1,4 +1,4 @@
-const CACHE_NAME = "nudge-v35";
+const CACHE_NAME = "nudge-v36";
 
 self.addEventListener("install", () => {
   self.skipWaiting();
@@ -6,16 +6,9 @@ self.addEventListener("install", () => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    Promise.all([
-      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))),
-      self.clients.claim(),
-    ]).then(() =>
-      self.clients.matchAll({ type: "window" }).then((clients) => {
-        clients.forEach((client) => {
-          if ("navigate" in client) client.navigate(client.url);
-        });
-      })
-    )
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 

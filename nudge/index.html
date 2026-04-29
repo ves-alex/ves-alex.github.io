@@ -343,12 +343,11 @@
   <script type="module" src="script.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then((regs) => {
-        regs.forEach((reg) => reg.unregister());
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((err) => {
+          console.warn("Service worker non enregistré :", err);
+        });
       });
-      if (window.caches && caches.keys) {
-        caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
-      }
     }
   </script>
 </body>
