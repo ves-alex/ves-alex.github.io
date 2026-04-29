@@ -1170,7 +1170,7 @@ function formatScoreBreakdown(task) {
     else bonusLabel = "aujourd'hui";
     detail += ` + ${formatScore(bonus)} (${bonusLabel})`;
   }
-  return `<span class="score-value">Score : ${formatScore(total)}</span><details class="score-info"><summary aria-label="Détails du calcul">i</summary><div class="score-breakdown">${detail}</div></details>`;
+  return `<span class="score-value">Score : ${formatScore(total)}</span><span class="score-info" tabindex="0" aria-label="Détails du calcul">i<span class="score-tooltip" role="tooltip">${detail}</span></span>`;
 }
 
 function effectiveUrgency(task) {

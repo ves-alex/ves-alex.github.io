@@ -1187,13 +1187,6 @@ span.flatpickr-weekday {
 }
 
 .score-info {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.score-info > summary {
-  list-style: none;
-  cursor: pointer;
   display: inline-flex;
   width: 18px;
   height: 18px;
@@ -1206,31 +1199,45 @@ span.flatpickr-weekday {
   align-items: center;
   justify-content: center;
   margin-left: 8px;
+  vertical-align: middle;
+  position: relative;
+  cursor: help;
   transition: border-color 0.15s, color 0.15s;
 }
 
-.score-info > summary::-webkit-details-marker {
-  display: none;
-}
-
-.score-info > summary::marker {
-  content: "";
-}
-
-.score-info > summary:hover,
-.score-info[open] > summary {
+.score-info:hover,
+.score-info:focus {
   border-color: var(--accent);
   color: var(--accent);
+  outline: none;
 }
 
-.score-breakdown {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
+.score-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
+  padding: 8px 12px;
   font-size: 0.85rem;
-  color: var(--muted);
+  font-family: inherit;
+  font-style: normal;
+  color: var(--text);
+  width: max-content;
+  max-width: min(320px, 85vw);
   line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.score-info:hover .score-tooltip,
+.score-info:focus .score-tooltip {
+  opacity: 1;
 }
 
 .form-status.success {
