@@ -263,6 +263,47 @@ html, body {
   font-weight: 500;
 }
 
+.form-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.form-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.form-chevron {
+  font-size: 0.9em;
+  color: var(--muted);
+  transition: transform 0.2s ease;
+}
+
+.task-form-card.collapsed .form-toggle {
+  margin-bottom: 0;
+}
+
+.task-form-card.collapsed .form-chevron {
+  transform: rotate(-90deg);
+}
+
+.task-form-card.collapsed .form {
+  display: none;
+}
+
 .card-head {
   display: flex;
   align-items: center;

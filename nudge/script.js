@@ -93,6 +93,19 @@ const suggestion = document.getElementById("suggestion");
 const formTitle = document.getElementById("form-title");
 const submitBtn = document.getElementById("submit-btn");
 const cancelBtn = document.getElementById("cancel-btn");
+const formCard = document.getElementById("task-form-card");
+const formToggle = document.getElementById("form-toggle");
+
+function setFormExpanded(expanded) {
+  formCard.classList.toggle("collapsed", !expanded);
+  formToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+}
+
+formToggle.addEventListener("click", () => {
+  const expanded = formToggle.getAttribute("aria-expanded") === "true";
+  setFormExpanded(!expanded);
+  if (!expanded) nameInput.focus({ preventScroll: true });
+});
 
 const settingsBtn = document.getElementById("settings-btn");
 const settingsBack = document.getElementById("settings-back");
@@ -1032,12 +1045,14 @@ form.addEventListener("submit", async (e) => {
   }
 
   resetForm();
+  setFormExpanded(false);
   render();
 });
 
 cancelBtn.addEventListener("click", () => {
   exitEditMode();
   resetForm();
+  setFormExpanded(false);
 });
 
 function startEdit(id) {
@@ -1072,6 +1087,7 @@ function startEdit(id) {
   formTitle.textContent = "Modifier la tâche";
   submitBtn.textContent = "Enregistrer";
   cancelBtn.classList.remove("hidden");
+  setFormExpanded(true);
   render();
   window.scrollTo({ top: 0, behavior: "smooth" });
   nameInput.focus({ preventScroll: true });

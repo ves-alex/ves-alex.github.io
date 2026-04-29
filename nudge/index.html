@@ -145,8 +145,11 @@
       </div>
     </section>
 
-    <section class="card">
-      <h2 id="form-title">Ajouter une tâche</h2>
+    <section class="card task-form-card collapsed" id="task-form-card">
+      <button type="button" id="form-toggle" class="form-toggle" aria-expanded="false" aria-controls="task-form">
+        <span id="form-title">Ajouter une tâche</span>
+        <span class="form-chevron" aria-hidden="true">▾</span>
+      </button>
       <form id="task-form" class="form">
         <label>
           Nom de la tâche
