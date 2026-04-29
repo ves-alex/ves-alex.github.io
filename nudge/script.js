@@ -1,9 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const NUDGE_VERSION = "v34";
-console.log(`[Nudge] script.js ${NUDGE_VERSION} loaded`);
-window.NUDGE_VERSION = NUDGE_VERSION;
-
 const SUPABASE_URL = "https://dhmthosilfhudzygmsst.supabase.co";
 const SUPABASE_KEY = "sb_publishable_kd3N68yGfmPOlK75bkTAHA_QZ9sNK1_";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -715,7 +711,6 @@ function clearSessionAndReload(reason) {
   Object.keys(localStorage).filter((k) => k.startsWith("sb-")).forEach((k) => localStorage.removeItem(k));
   window.location.reload();
 }
-window.clearSessionAndReload = clearSessionAndReload;
 
 function withTimeout(promise, ms, label) {
   return Promise.race([
