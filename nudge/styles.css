@@ -1214,9 +1214,9 @@ span.flatpickr-weekday {
 
 .score-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  left: calc(100% + 10px);
+  transform: translateY(-50%);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1226,7 +1226,7 @@ span.flatpickr-weekday {
   font-style: normal;
   color: var(--text);
   width: max-content;
-  max-width: min(320px, 85vw);
+  max-width: min(280px, calc(100vw - 80px));
   line-height: 1.4;
   opacity: 0;
   pointer-events: none;
@@ -1234,6 +1234,7 @@ span.flatpickr-weekday {
   z-index: 10;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
+
 
 .score-info:hover .score-tooltip,
 .score-info:focus .score-tooltip {
