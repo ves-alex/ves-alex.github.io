@@ -1129,31 +1129,54 @@ suggestBtn.addEventListener("click", () => {
   suggestion.innerHTML = `
     <h3>Prochaine action</h3>
     <div class="pick">${escapeHtml(best.name)}</div>
-    <div class="score">Score : ${formatScore(score(best))} ((importance ${best.importance} + urgence ${best.urgency}) ÷ (${ENERGY_BIAS} + ${ENERGY_SLOPE} × énergie ${best.energy}))</div>
+    <div class="score">${formatScoreBreakdown(best)}</div>
     ${nextHtml}
   `;
 });
 
 function score(task) {
-  return (task.importance + effectiveUrgency(task)) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
+  const base = (task.importance + effectiveUrgency(task)) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
+  return base + deadlineBonus(task.due_date);
+}
+
+function formatScoreBreakdown(task) {
+  const u = effectiveUrgency(task);
+  const base = (task.importance + u) / (ENERGY_BIAS + ENERGY_SLOPE * task.energy);
+  const bonus = deadlineBonus(task.due_date);
+  const urgencySource = task.due_date ? `urgence ${u} (date)` : `urgence ${u}`;
+  const baseStr = `(importance ${task.importance} + ${urgencySource}) ÷ (${ENERGY_BIAS} + ${ENERGY_SLOPE} × énergie ${task.energy}) = ${formatScore(base)}`;
+  if (bonus === 0) return `Score : ${formatScore(base)} (${baseStr})`;
+  const bonusLabel = bonus >= 10 ? "en retard" : "aujourd'hui";
+  return `Score : ${formatScore(base + bonus)} (${baseStr} + ${bonus} ${bonusLabel})`;
 }
 
 function effectiveUrgency(task) {
-  const dueBoost = urgencyFromDueDate(task.due_date);
-  return Math.max(task.urgency, dueBoost);
+  return task.due_date ? urgencyFromDueDate(task.due_date) : task.urgency;
 }
 
-function urgencyFromDueDate(dueDate) {
-  if (!dueDate) return 0;
+function daysUntilDue(dueDate) {
+  if (!dueDate) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const due = new Date(dueDate + "T00:00:00");
-  const days = Math.floor((due - today) / 86400000);
+  return Math.floor((due - today) / 86400000);
+}
+
+function urgencyFromDueDate(dueDate) {
+  const days = daysUntilDue(dueDate);
+  if (days === null) return 0;
   if (days <= 0) return 10;
-  if (days === 1) return 9;
-  if (days <= 3) return 8;
-  if (days <= 7) return 6;
-  if (days <= 14) return 5;
+  if (days === 1) return 6;
+  if (days <= 3) return 4;
+  if (days <= 7) return 2;
+  return 1;
+}
+
+function deadlineBonus(dueDate) {
+  const days = daysUntilDue(dueDate);
+  if (days === null) return 0;
+  if (days < 0) return 10;
+  if (days === 0) return 3;
   return 0;
 }
 
@@ -1198,7 +1221,8 @@ function render() {
     li.className = "task-item"
       + (task.id === editingId ? " editing" : "")
       + (idx === 0 && sorted.length > 1 ? " top-pick" : "");
-    const dueLabel = task.due_date ? `<span class="due-pill ${urgencyFromDueDate(task.due_date) >= 9 ? "due-urgent" : ""}">⏱ ${formatDueDate(task.due_date)}${task.due_at ? ` ${formatDueTime(task.due_at)}` : ""}</span>` : "";
+    const daysLeft = daysUntilDue(task.due_date);
+    const dueLabel = task.due_date ? `<span class="due-pill ${daysLeft !== null && daysLeft <= 1 ? "due-urgent" : ""}">⏱ ${formatDueDate(task.due_date)}${task.due_at ? ` ${formatDueTime(task.due_at)}` : ""}</span>` : "";
     li.innerHTML = `
       <div>
         <div class="name">${escapeHtml(task.name)} ${dueLabel}</div>
