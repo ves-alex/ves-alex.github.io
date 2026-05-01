@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Portfolio de x37a — curieux du web, accompagné de Powell, husky blanc." />
     <title>x37a — Portfolio</title>
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=17" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -20,7 +20,12 @@
 
         <header class="nav">
             <a href="#accueil" class="brand">x37a</a>
-            <nav>
+            <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="primary-nav" type="button">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <nav id="primary-nav">
                 <a href="#apropos">À propos</a>
                 <a href="#powell">Powell</a>
                 <a href="#competences">Compétences</a>
@@ -181,6 +186,6 @@
         </footer>
     </main>
 
-    <script src="script.js?v=16"></script>
+    <script src="script.js?v=17"></script>
 </body>
 </html>

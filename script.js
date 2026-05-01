@@ -49,6 +49,41 @@ window.addEventListener('load', () => {
     }, 800);
 })();
 
+// ===== Burger menu (mobile) =====
+const navToggle = document.querySelector('.nav-toggle');
+const primaryNav = document.getElementById('primary-nav');
+
+function setNavOpen(open) {
+    if (!navToggle || !primaryNav) return;
+    navToggle.classList.toggle('open', open);
+    primaryNav.classList.toggle('open', open);
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    navToggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
+    document.body.style.overflow = open ? 'hidden' : '';
+}
+
+if (navToggle && primaryNav) {
+    navToggle.addEventListener('click', () => {
+        setNavOpen(!navToggle.classList.contains('open'));
+    });
+    // Fermer le menu après clic sur un lien (navigation interne)
+    primaryNav.querySelectorAll('a').forEach((a) => {
+        a.addEventListener('click', () => setNavOpen(false));
+    });
+    // Fermer avec Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navToggle.classList.contains('open')) {
+            setNavOpen(false);
+        }
+    });
+    // Sécurité : si on agrandit la fenêtre au-delà du breakpoint, on ferme
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 720 && navToggle.classList.contains('open')) {
+            setNavOpen(false);
+        }
+    });
+}
+
 // ===== Reveal au scroll =====
 const reveals = document.querySelectorAll('.reveal');
 const observer = new IntersectionObserver((entries) => {
@@ -91,23 +126,34 @@ const heroInner = document.querySelector('.hero-inner');
 const progressBar = document.querySelector('.scroll-progress');
 let scrollTicking = false;
 
+// On désactive les effets coûteux/visuellement bruyants sur petit écran
+// (parallax blobs + hero qui s'envole). La progress bar reste utile partout.
+const isSmallViewport = () => window.innerWidth <= 720;
+
 function onScroll() {
     if (scrollTicking) return;
     scrollTicking = true;
     requestAnimationFrame(() => {
         const sy = window.scrollY;
+        const small = isSmallViewport();
 
-        // CSS variable pour le parallax des blobs (composé via CSS)
-        document.documentElement.style.setProperty('--scroll-y', sy + 'px');
-
-        // Hero qui s'envole : translate -0.4× scroll + fade sur 600px
-        if (heroInner) {
-            const fadeRatio = Math.max(0, Math.min(1, sy / 600));
-            heroInner.style.translate = `0 ${(-sy * 0.4).toFixed(1)}px`;
-            heroInner.style.opacity = (1 - fadeRatio).toFixed(3);
+        if (!small) {
+            // Parallax blobs (composé via CSS avec la propriété `translate`)
+            document.documentElement.style.setProperty('--scroll-y', sy + 'px');
+            // Hero qui s'envole : translate -0.4× scroll + fade sur 600px
+            if (heroInner) {
+                const fadeRatio = Math.max(0, Math.min(1, sy / 600));
+                heroInner.style.translate = `0 ${(-sy * 0.4).toFixed(1)}px`;
+                heroInner.style.opacity = (1 - fadeRatio).toFixed(3);
+            }
+        } else if (heroInner) {
+            // Reset au cas où on basculerait de desktop vers mobile (rotate device, resize)
+            heroInner.style.translate = '0 0';
+            heroInner.style.opacity = '1';
+            document.documentElement.style.setProperty('--scroll-y', '0px');
         }
 
-        // Scroll progress bar
+        // Scroll progress bar — actif partout
         if (progressBar) {
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
             const ratio = docHeight > 0 ? sy / docHeight : 0;
