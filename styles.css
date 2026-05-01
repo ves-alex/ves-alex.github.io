@@ -56,160 +56,58 @@ a {
     text-decoration: none;
 }
 
-/* ===== Intro : zipper circulaire qui s'ouvre ===== */
+/* ===== Hero : cascade d'apparition + caret type-on ===== */
 
-.ring-intro {
+.hero-inner > * {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: hero-fade-up 1.4s var(--ease-out) forwards;
+}
+
+.hero-inner > .eyebrow   { animation-delay: 0.3s; }
+.hero-inner > h1         { animation-delay: 0.7s; }
+.hero-inner > .lede      { animation-delay: 2.8s; animation-duration: 1.8s; }
+.hero-inner > .cta-row   { animation-delay: 3.6s; }
+
+@keyframes hero-fade-up {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Scroll progress bar ===== */
+.scroll-progress {
     position: fixed;
-    inset: 0;
-    z-index: 1000;
-    overflow: hidden;
-    cursor: pointer;
-    background: transparent;
-}
-
-.ring-overlay {
-    position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--silver-3), var(--silver-1));
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    z-index: 100;
     pointer-events: none;
+    opacity: 0.7;
+    transition: transform 0.05s linear;
 }
 
-/* Variable pilote : rayon du cercle (en px). Modifiée par JS au drag. */
-.ring-intro {
-    --ring-r: 80px;
-    --pull-offset: 130px;
+/* Caret clignotant pendant la frappe du titre — inline, pas en absolute */
+.highlight.typing::after {
+    content: '|';
+    display: inline;
+    position: static;
+    margin-left: 0.05em;
+    background: none;
+    color: var(--silver-2);
+    -webkit-text-fill-color: var(--silver-2);
+    font-weight: 300;
+    opacity: 1;
+    animation: caret-blink 0.85s steps(1) infinite;
 }
 
-.ring-mask-circle {
-    r: var(--ring-r);
-    transition: r 2.2s cubic-bezier(0.4, 0, 0.15, 1);
-}
-
-.ring-teeth-outer {
-    r: calc(var(--ring-r) + 8px);
-    transition: r 2.2s cubic-bezier(0.4, 0, 0.15, 1),
-                opacity 1.6s cubic-bezier(0.4, 0, 0.15, 1) 0.6s;
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
-    animation: ring-teeth-rotate 14s linear infinite;
-    transform-origin: center;
-}
-
-.ring-teeth-inner {
-    r: calc(var(--ring-r) + 18px);
-    transition: r 2.2s cubic-bezier(0.4, 0, 0.15, 1),
-                opacity 1.6s cubic-bezier(0.4, 0, 0.15, 1) 0.6s;
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
-    animation: ring-teeth-rotate 22s linear infinite reverse;
-    transform-origin: center;
-}
-
-@keyframes ring-teeth-rotate {
-    from { stroke-dashoffset: 0; }
-    to { stroke-dashoffset: 200; }
-}
-
-/* Légère pulsation au repos pour signaler "interactif" */
-.ring-intro:not(.opening):not(.dragging) {
-    animation: ring-r-pulse 3.5s ease-in-out infinite;
-}
-@keyframes ring-r-pulse {
-    0%, 100% { --ring-r: 80px; }
-    50% { --ring-r: 88px; }
-}
-
-/* Ouverture : le trou grandit jusqu'à couvrir l'écran, les dents fondent */
-.ring-intro.opening {
-    --ring-r: 1800px;
-    animation: none;
-}
-.ring-intro.opening .ring-teeth-outer,
-.ring-intro.opening .ring-teeth-inner {
-    opacity: 0;
-    animation: none;
-}
-
-/* Tirette : positionnée au-dessus du cercle, draggable */
-.ring-pull {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 64px;
-    height: 100px;
-    margin-left: -32px;
-    transform: translateY(calc(-1 * var(--pull-offset)));
-    transition: transform 2.2s cubic-bezier(0.4, 0, 0.15, 1),
-                opacity 1.2s cubic-bezier(0.4, 0, 0.15, 1) 0.4s,
-                filter 0.3s ease;
-    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.65))
-            drop-shadow(0 2px 4px rgba(255, 255, 255, 0.18));
-    pointer-events: auto;
-    cursor: grab;
-    z-index: 5;
-    will-change: transform;
-}
-
-.ring-intro:not(.opening):not(.dragging) .ring-pull {
-    animation: ring-pull-bob 3.5s ease-in-out infinite;
-}
-
-@keyframes ring-pull-bob {
-    0%, 100% { transform: translateY(calc(-1 * var(--pull-offset))); }
-    50% { transform: translateY(calc(-1 * var(--pull-offset) - 6px)); }
-}
-
-.ring-pull:hover {
-    filter: drop-shadow(0 8px 22px rgba(0, 0, 0, 0.75))
-            drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
-}
-
-.ring-pull:active {
-    cursor: grabbing;
-}
-
-/* Pendant le drag : transitions et animations coupées pour suivi 1:1 du curseur */
-.ring-intro.dragging .ring-mask-circle,
-.ring-intro.dragging .ring-teeth-outer,
-.ring-intro.dragging .ring-teeth-inner,
-.ring-intro.dragging .ring-pull {
-    transition: none;
-    animation: none;
-}
-.ring-intro.dragging {
-    animation: none;
-}
-
-.ring-pull svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-}
-
-.ring-pull-shine {
-    animation: ring-shine 4s ease-in-out infinite;
-    transform-origin: center;
-}
-
-@keyframes ring-shine {
-    0%, 100% { transform: translateX(-30px); opacity: 0; }
-    20% { opacity: 0.6; }
-    50% { transform: translateX(30px); opacity: 0.6; }
-    80% { opacity: 0; }
-}
-
-/* À l'ouverture, la tirette part loin vers le haut puis fond */
-.ring-intro.opening .ring-pull {
-    transform: translateY(-120vh);
-    opacity: 0;
-    animation: none;
-}
-
-.ring-intro.gone {
-    display: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .ring-intro { display: none; }
+@keyframes caret-blink {
+    50% { opacity: 0; }
 }
 
 /* ===== Navigation ===== */
@@ -262,11 +160,13 @@ a {
     transition: width 0.5s var(--ease-out);
 }
 
-.nav nav a:hover {
+.nav nav a:hover,
+.nav nav a.active {
     color: var(--ink);
 }
 
-.nav nav a:hover::after {
+.nav nav a:hover::after,
+.nav nav a.active::after {
     width: 100%;
 }
 
@@ -288,14 +188,18 @@ a {
     opacity: 0.35;
     z-index: 0;
     animation: float 18s ease-in-out infinite;
+    will-change: transform, translate;
 }
 
+/* Parallax léger : les blobs descendent un peu moins vite que le scroll
+   (la propriété `translate` se compose avec le `transform` de l'animation float). */
 .blob-1 {
     width: 520px;
     height: 520px;
     background: radial-gradient(circle, #3a3a40 0%, transparent 70%);
     top: -140px;
     left: -100px;
+    translate: 0 calc(var(--scroll-y, 0px) * 0.20);
 }
 
 .blob-2 {
@@ -305,6 +209,7 @@ a {
     bottom: -120px;
     right: -80px;
     animation-delay: -6s;
+    translate: 0 calc(var(--scroll-y, 0px) * 0.35);
 }
 
 .blob-3 {
@@ -314,6 +219,7 @@ a {
     top: 40%;
     right: 20%;
     animation-delay: -11s;
+    translate: 0 calc(var(--scroll-y, 0px) * 0.50);
 }
 
 @keyframes float {
@@ -355,20 +261,7 @@ a {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    position: relative;
     display: inline-block;
-}
-
-.highlight::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.05em;
-    height: 0.1em;
-    background: var(--silver-3);
-    opacity: 0.2;
-    border-radius: 4px;
 }
 
 .lede {
@@ -421,35 +314,6 @@ a {
     background: var(--bg-3);
     border-color: var(--border-strong);
     transform: translateY(-2px);
-}
-
-.scroll-indicator {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 24px;
-    height: 40px;
-    border: 1px solid var(--ink-muted);
-    border-radius: 12px;
-    opacity: 0.6;
-}
-
-.scroll-indicator span {
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    width: 3px;
-    height: 8px;
-    background: var(--ink-soft);
-    border-radius: 2px;
-    transform: translateX(-50%);
-    animation: scrollDot 2.4s var(--ease-in-out) infinite;
-}
-
-@keyframes scrollDot {
-    0%, 100% { transform: translate(-50%, 0); opacity: 1; }
-    50% { transform: translate(-50%, 12px); opacity: 0.2; }
 }
 
 /* ===== Sections ===== */
@@ -529,6 +393,7 @@ a {
 .powell-grid {
     max-width: 900px;
     margin: 0 auto;
+    perspective: 1400px;
 }
 
 .powell-card {
@@ -540,13 +405,17 @@ a {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 2.5rem;
+    transform: translateY(var(--card-y, 0px))
+               rotateX(var(--tilt-x, 0deg))
+               rotateY(var(--tilt-y, 0deg));
+    transform-style: preserve-3d;
     transition: border-color 0.6s var(--ease-out),
-                transform 0.6s var(--ease-out);
+                transform 0.35s var(--ease-out);
 }
 
 .powell-card:hover {
+    --card-y: -2px;
     border-color: var(--border-strong);
-    transform: translateY(-2px);
 }
 
 .powell-photo {
@@ -596,6 +465,7 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1.5rem;
+    perspective: 1200px;
 }
 
 .skill-card {
@@ -604,7 +474,8 @@ a {
     border-radius: var(--radius);
     padding: 2rem;
     box-shadow: var(--shadow);
-    transition: transform 0.6s var(--ease-out),
+    transform: translateY(var(--card-y, 0px));
+    transition: transform 0.5s var(--ease-out),
                 box-shadow 0.6s var(--ease-out),
                 border-color 0.6s var(--ease-out);
     position: relative;
@@ -623,7 +494,7 @@ a {
 }
 
 .skill-card:hover {
-    transform: translateY(-6px);
+    --card-y: -6px;
     box-shadow: 0 24px 50px rgba(0, 0, 0, 0.7);
     border-color: var(--border-strong);
 }
@@ -655,10 +526,24 @@ a {
 
 .bar span {
     display: block;
+    width: 0;
     height: 100%;
     background: linear-gradient(90deg, var(--silver-3), var(--silver-1));
     border-radius: 999px;
-    transition: width 1.8s var(--ease-out);
+    transition: width 1.8s var(--ease-out) 0.3s,
+                background 0.5s var(--ease-out),
+                filter 0.5s var(--ease-out);
+}
+
+/* Bars : se remplissent quand la section scroll-révèle */
+.reveal.visible .bar span {
+    width: var(--bar-width, 0%);
+}
+
+/* Skill-card au survol : la barre s'illumine */
+.skill-card:hover .bar span {
+    background: linear-gradient(90deg, var(--silver-2), #ffffff);
+    filter: drop-shadow(0 0 6px rgba(240, 240, 242, 0.45));
 }
 
 .skill-card-soon .bar span {
@@ -670,6 +555,7 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1.5rem;
+    perspective: 1200px;
 }
 
 .project-card {
@@ -683,7 +569,8 @@ a {
     box-shadow: var(--shadow);
     text-decoration: none;
     color: inherit;
-    transition: transform 0.6s var(--ease-out),
+    transform: translateY(var(--card-y, 0px));
+    transition: transform 0.5s var(--ease-out),
                 box-shadow 0.6s var(--ease-out),
                 border-color 0.6s var(--ease-out);
     position: relative;
@@ -702,9 +589,10 @@ a {
 }
 
 .project-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.7);
-    border-color: var(--border-strong);
+    --card-y: -6px;
+    box-shadow: 0 24px 50px rgba(0, 0, 0, 0.7),
+                0 0 0 1px var(--silver-3);
+    border-color: var(--silver-3);
 }
 
 .project-icon {
@@ -741,8 +629,17 @@ a {
     letter-spacing: 0.02em;
 }
 
+.project-arrow {
+    display: inline-block;
+    transition: transform 0.45s var(--ease-out);
+}
+
 .project-card:hover .project-link {
     color: var(--silver-1);
+}
+
+.project-card:hover .project-arrow {
+    transform: translateX(6px);
 }
 
 /* ===== Contact ===== */
@@ -888,6 +785,30 @@ a {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* Stagger : les cards apparaissent une par une dans une section révélée.
+   On utilise `translate` (propriété séparée) pour ne pas conflicter avec
+   le `transform` réservé au tilt 3D + lift au hover. */
+.reveal .skill-card,
+.reveal .project-card {
+    opacity: 0;
+    translate: 0 24px;
+    transition: opacity 0.8s var(--ease-out),
+                translate 0.8s var(--ease-out);
+}
+.reveal.visible .skill-card,
+.reveal.visible .project-card {
+    opacity: 1;
+    translate: 0 0;
+}
+.reveal.visible .skill-card:nth-child(1),
+.reveal.visible .project-card:nth-child(1) { transition-delay: 0.1s; }
+.reveal.visible .skill-card:nth-child(2),
+.reveal.visible .project-card:nth-child(2) { transition-delay: 0.25s; }
+.reveal.visible .skill-card:nth-child(3),
+.reveal.visible .project-card:nth-child(3) { transition-delay: 0.4s; }
+.reveal.visible .skill-card:nth-child(4),
+.reveal.visible .project-card:nth-child(4) { transition-delay: 0.55s; }
 
 /* ===== Responsive ===== */
 @media (max-width: 720px) {
