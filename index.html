@@ -147,8 +147,27 @@
                 <a class="project-card" href="https://useember.vercel.app/" target="_blank" rel="noopener">
                     <div class="project-icon" aria-hidden="true">
                         <svg viewBox="0 0 512 512" width="40" height="40">
+                            <defs>
+                                <radialGradient id="emberHalo" cx="256" cy="256" r="220" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#ff8c42" stop-opacity="0.55"/>
+                                    <stop offset="35%" stop-color="#ff8c42" stop-opacity="0.25"/>
+                                    <stop offset="100%" stop-color="#ff8c42" stop-opacity="0"/>
+                                </radialGradient>
+                                <radialGradient id="emberCore" cx="256" cy="252" r="110" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#ffe2b5"/>
+                                    <stop offset="20%" stop-color="#ffc080"/>
+                                    <stop offset="55%" stop-color="#ff8c42"/>
+                                    <stop offset="100%" stop-color="#c66a31"/>
+                                </radialGradient>
+                                <radialGradient id="emberHilight" cx="232" cy="228" r="40" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#fff0d4" stop-opacity="0.6"/>
+                                    <stop offset="100%" stop-color="#fff0d4" stop-opacity="0"/>
+                                </radialGradient>
+                            </defs>
                             <rect width="512" height="512" rx="96" fill="#15171a"/>
-                            <path d="M 256 112 C 304 176, 348 224, 348 280 C 348 332, 308 372, 256 372 C 204 372, 164 332, 164 280 C 164 248, 184 220, 208 200 C 200 232, 220 256, 248 256 C 232 232, 232 196, 256 112 Z" fill="#ff8c42"/>
+                            <circle cx="256" cy="256" r="220" fill="url(#emberHalo)"/>
+                            <circle cx="256" cy="256" r="110" fill="url(#emberCore)"/>
+                            <circle cx="232" cy="228" r="40" fill="url(#emberHilight)"/>
                         </svg>
                     </div>
                     <div class="project-body">
